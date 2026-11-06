@@ -1,5 +1,7 @@
 # secrets — never commit
 .env
+.env.*
+!.env.example
 ant.txt
 *.key
 
@@ -13,3 +15,16 @@ venv/
 
 # run artefacts (sample outputs are committed under examples/)
 output/
+
+# results store and uploaded transcripts (client data never goes in git)
+var/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# real client source policies live outside the repo (in production: in the database).
+# Only the fictional sample policies are committed, as seed and example files.
+data/clients/*.json
+!data/clients/default.json
+!data/clients/example_healthtech.json

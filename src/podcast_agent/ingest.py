@@ -264,7 +264,7 @@ def load_episode(path: str | Path) -> Episode:
     speaker_map: dict[str, str] = {}
     edits = 0
     last_ts = None
-    for i, row in enumerate(rows):
+    for row in rows:
         flags: list[str] = []
         ts_raw = row.get("timestamp")
         try:

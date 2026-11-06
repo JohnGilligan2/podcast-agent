@@ -27,7 +27,7 @@ def to_markdown(r: EpisodeReport) -> str:
     people = ", ".join(filter(None, [f"**Host:** {r.host}" if r.host else None,
                                      f"**Guests:** {', '.join(r.guests)}" if r.guests else None]))
     out += [f"`{r.episode_id}` · {people} · status: **{r.status}** · client `{r.client_id}` "
-            f"(source policy `{r.source_policy_version}`)", ""]
+            f"(source policy `{r.source_policy_version}`) · release `{r.code_version}` · prompt `{r.prompt_version}`", ""]
     if r.error:
         out += [f"> ⚠️ Run error: {r.error}", ""]
 

@@ -17,15 +17,16 @@ from __future__ import annotations
 import json
 import logging
 import time
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
+from . import CODE_VERSION
 from .config import Settings
 from .ingest import Episode
 from .knowledge_base import KnowledgeBase
 from .llm import LLMClient
-from .prompts import SYSTEM_PROMPT, build_user_prompt
+from .prompts import PROMPT_VERSION, SYSTEM_PROMPT, build_user_prompt
 from .schemas import EpisodeReport, RunMetrics
 from .sources import ClientSources
 from .telemetry import Telemetry
@@ -48,7 +49,7 @@ class TraceWriter:
         self._fh = path.open("w", encoding="utf-8")
 
     def write(self, event: str, **data: Any) -> None:
-        record = {"ts": datetime.now(timezone.utc).isoformat(timespec="milliseconds"), "event": event, **data}
+        record = {"ts": datetime.now(UTC).isoformat(timespec="milliseconds"), "event": event, **data}
         self._fh.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
         self._fh.flush()
 
@@ -202,11 +203,12 @@ class PodcastAgent:
         report = EpisodeReport(
             episode_id=episode.episode_id, title=episode.title, host=episode.host, guests=episode.guests,
             source_file=Path(episode.source_path).name, client_id=self.sources.client_id,
-            source_policy_version=self.sources.version, status=status, error=error,
+            source_policy_version=self.sources.version, code_version=CODE_VERSION,
+            prompt_version=PROMPT_VERSION, status=status, error=error,
             plan=s.plan, summary=s.summary, key_notes=s.key_notes,
             fact_checks=[s.verdicts[c] for c in s.claims if c in s.verdicts],
             reviewer_notes=s.reviewer_notes, ingest=episode.ingest_report, metrics=metrics,
-            generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            generated_at=datetime.now(UTC).isoformat(timespec="seconds"),
         )
         log.info("■ %s  %s  turns=%d tools=%d rejected=%d searches=%d kb+%d web tokens in/out=%d/%d cost≈$%s "
                  "%.1fs (model %.1fs, tools %.2fs, turns %s)",

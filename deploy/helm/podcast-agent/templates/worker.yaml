@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pa.name" . }}-worker
+  labels:
+    {{- include "pa.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  strategy: {type: Recreate}          # one pod owns the SQLite volume at a time
+  selector:
+    matchLabels: {app.kubernetes.io/instance: {{ .Release.Name }}, app.kubernetes.io/component: worker}
+  template:
+    metadata:
+      labels:
+        {{- include "pa.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.worker.terminationGracePeriodSeconds }}
+      securityContext: {fsGroup: 1000}
+      containers:
+        - name: worker
+          image: {{ include "pa.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["worker"]
+          env:
+            {{- include "pa.env" . | nindent 12 }}
+            - {name: PODCAST_AGENT_OUTPUT, value: /app/var/output}
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef: {name: {{ .Values.secrets.apiKeySecretName }}, key: {{ .Values.secrets.apiKeySecretKey }}}
+          {{- include "pa.security" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "pa.mounts" . | nindent 12 }}
+      volumes:
+        {{- include "pa.volumes" . | nindent 8 }}

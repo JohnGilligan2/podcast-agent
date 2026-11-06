@@ -205,10 +205,31 @@ flowchart LR
 
 ## 5. Results store and search
 
-The brief needs output files on disk; agencies need to look back. Every finished run is stored and indexed.
+The agent, the worker and the GUI all write and read through one small interface
+([`store.py`](../src/podcast_agent/store.py) `ResultStore`), so the backend can change without touching them.
 
-| Stored per episode | Where |
+| | v0.1 (built, ships with the submission) | Production (v0.2) |
+|---|---|---|
+| Tables | SQLite file on a Docker volume shared by the `web` and `worker` containers | Postgres |
+| Search | SQLite FTS5 full-text index | OpenSearch |
+| Report files | `output/<episode>/report.json`, `report.md`, `trace.jsonl` (the brief asks for files) | Object storage, one prefix per client |
+| Extra services to run | None | Managed Postgres + OpenSearch |
+
+| Table | Holds |
 |---|---|
+| `episodes` | id, client, title, host, guests, processed time, model, cost, status, **release and prompt version**, full report |
+| `transcript_lines` | episode id, timestamp, speaker, raw text, clean text, ingest flags |
+| `notes` | episode id, summary, takeaways, quotes with timestamps, tags |
+| `claims` | episode id, claim, speaker, timestamp, type, verdict, confidence, rationale, sources, review flag |
+| `disputes` | claim or quote id, a copy of its text, note, open/resolved, who, when, resolution |
+| `jobs` | the upload queue: file, client, status, live progress message, attempts, cost |
+
+A rerun replaces an episode's results in one transaction; disputes are kept, because each carries a
+copy of the text it disputes. What clients can do with it: search past episodes, quotes and claims;
+filter claims by verdict (every ⚠️ this quarter); see how a recurring claim was judged over time; rerun
+old episodes after a source-policy change and compare verdicts; feed resolved disputes into the golden set.
+
+---|---|
 | Metadata: client, show, episode, title, host, guests, processed date | DynamoDB |
 | Summary, takeaways, quotes with timestamps, tags | S3 (`report.json`) + OpenSearch |
 | Every claim with verdict, confidence, rationale, evidence tiers, review flag | S3 + OpenSearch |
@@ -230,7 +251,7 @@ One results store sits behind every front end; a client uses whichever fits.
 | Option | Who it's for | What it does | Effort |
 |---|---|---|---|
 | **CLI / Docker** (built) | Engineers, the panel | Batch-process files, write reports | Done |
-| **Web GUI** | Editors and producers | Upload transcripts (S3 presigned upload), watch job status, read and approve reports, search history, manage source lists (admins) | Medium: FastAPI + a small React app on CloudFront |
+| **Web GUI** (built, v0.1) | Editors and producers | Upload transcripts, watch job status live, review the report next to the raw and clean transcript, jump from a quote or claim to its line, search history, raise and resolve disputes. v0.2 adds approve-and-publish, the sources admin page and login | Done (Streamlit); a React front end only if editors outgrow it |
 | **MCP server** | Teams who live in Claude or another MCP-capable chat | `submit_episode`, `get_report`, `search_results` from inside the chat. Read/search tools here; source-list writes only on the separate admin MCP server | Small: wraps the same `PodcastAgent.run` and results store |
 | **API** | Agencies plugging into their own tools, podcast-host or RSS integrations | `POST /episodes` → `202` + job id; webhooks / EventBridge on completion | Small: API Gateway + the submit Lambda below |
 | **Slack notifications** | Everyone | "Ready for review" with a link | Small |
@@ -276,6 +297,28 @@ flowchart LR
 | Steady throughput | Worker pods × threads per pod | KEDA target: queue depth per pod; total in-flight calls sized under the TPM quota |
 | Long episodes (2–3 h, ~30k words) | Context | ~45k tokens fits comfortably in a 1M-token context, so no chunking is needed for normal shows. For very long or multi-part content, a map-reduce step summarises segments first |
 | Back-catalogue jobs that are not urgent | Batch API | Route to the Message Batches API at 50% of the price, accepting up to 24 h turnaround |
+
+---
+
+### How the GUI scales
+
+```mermaid
+flowchart LR
+    U[Editors] --> I[Ingress + TLS]
+    I --> W1[web pod] & W2[web pod] & W3[web pod]
+    W1 & W2 & W3 -->|enqueue / read| DB[(Results store<br/>jobs · episodes · disputes)]
+    DB -->|claim job| K1[worker pod] & K2[worker pod] & KN[worker pod …]
+    K1 & K2 & KN -->|Messages API| C[Claude]
+    HPA[HPA on CPU] -.-> W1
+    KEDA[KEDA on queued jobs] -.-> K1
+```
+
+- The web GUI is its own container and is **stateless**: uploads, jobs and results live in storage.
+- In Kubernetes: 2–3 web pods behind an ingress, scaled by a horizontal pod autoscaler on traffic.
+- Agent workers are a separate Deployment, scaled on job-queue depth by KEDA (0 → N).
+- There is no web server per worker or per thread. The layers scale independently and talk only
+  through the job queue and the results store.
+- Locally, docker-compose runs one `web` and one `worker` container on a shared volume.
 
 ---
 
@@ -384,7 +427,111 @@ starts, so `increase()` also counts the first episode of a short-lived process.
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| 0. Today | Local Docker, CLI, client source policies, threads, optional OTel stack | Panel review |
+| 0. v0.1 (submission) | Docker: CLI, review GUI + queue worker, SQLite results store, client source policies, threads, golden set, CI, Helm chart, optional OTel stack | Panel review |
 | 1. Pilot (2–3 weeks) | One client, Fargate + SQS + S3, editors review in a shared folder | ≥ 90% of reports approved with minor edits |
 | 2. Production | Kubernetes workers + KEDA, shared rate limiter, review app, results store, self-hosted Langfuse + Grafana alerts, per-client isolation, CI eval gate | SLOs: 95% of episodes ready < 10 min; < 1% failures |
 | 3. Scale-out | asyncio workers where density pays, audio ingestion, Batch API for back catalogues, cheaper model routing per step, social-post generation | Cost per episode down 40% at equal quality |
+
+---
+
+## 13. Delivery pipeline: branches, CI, Helm and Argo CD
+
+```mermaid
+flowchart LR
+    F[feature branch] -->|PR + review| D[develop]
+    D -->|PR + review| M[main]
+    M -->|tag v0.x.y| R[release workflow]
+    R -->|build + push image| G[(ghcr.io)]
+    R -->|write image tag| H[Helm values on main]
+    H -->|watched by| A[Argo CD]
+    A -->|sync| K[Kubernetes]
+    CI{{CI on every PR:<br/>lint · tests · golden set}} -. blocks merge .-> D
+    CI -. blocks merge .-> M
+```
+
+| Step | What happens | Where |
+|---|---|---|
+| Develop | Work on `develop`, starting at v0.1. Merge to `main` for production through a reviewed pull request | Branch protection |
+| CI on every PR | `ruff`, unit + agent-loop + GUI smoke tests (scripted model, no key), golden-set evaluation; any failure blocks the merge | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
+| Release | Tag `v0.2.0` → build the image, push it with that tag, write the tag into the Helm values | [`.github/workflows/release.yml`](../.github/workflows/release.yml) |
+| Deploy | Argo CD watches the chart on `main` and syncs the cluster | [`deploy/argocd/application.yaml`](../deploy/argocd/application.yaml) |
+| Later | A staging environment synced from `develop` before production | — |
+
+### What goes where
+
+| Setting | Helm values | Database | Kubernetes Secret (outside git) |
+|---|---|---|---|
+| GUI on/off, MCP server on/off | ✅ | | |
+| Replicas and autoscaling limits (web, workers) | ✅ | | |
+| Model and reasoning effort, concurrency per worker | ✅ | | |
+| Image tag (set by CI), resources, ingress host and TLS | ✅ | | |
+| Name of the secret holding the API key | ✅ | | |
+| Default trusted-source list to seed a new client | ✅ optional | | |
+| Each client's trusted / blocked sources and pinned facts | | ✅ changed often via GUI or MCP; a redeploy per edit would be wrong | |
+| The API key | | | ✅ e.g. External Secrets from a vault |
+
+| In GitHub | Never in GitHub (enforced by `.gitignore` and `.dockerignore`) |
+|---|---|
+| Source code and tests; Dockerfile and compose files | API keys; any `.env` with real values |
+| Helm chart with default values; Argo CD application | Each client's real source lists and pinned facts |
+| `.env.example`; the fictional sample client policies as seed files | The results database, uploaded transcripts and client reports |
+| Docs, sample outputs under `examples/`, CI workflows, `CHANGELOG.md` | |
+
+The chart is [`deploy/helm/podcast-agent`](../deploy/helm/podcast-agent). v0.1 targets the SQLite store, so it
+runs one web pod and one worker pod on one volume, and refuses, with a clear message, settings that need the
+v0.2 Postgres store: more replicas, the HPA, KEDA, or the MCP server. Pods run as non-root with a read-only
+root filesystem, and the web pod has no API key at all because it never calls Claude. Until the v0.2 sources
+admin page moves client policies into the database, real policy files are mounted from a ConfigMap created
+outside git (`clients.existingConfigMap`).
+
+## 14. Versioning, regression and rollback
+
+**Versioning.** Releases use semantic version tags (v0.1.0; v0.2.0 for a feature, v0.1.1 for a fix), and
+[`CHANGELOG.md`](../CHANGELOG.md) lists what changed. Prompts, the model name and the source policies are
+versioned with the code, never edited live. Every stored result records `code_version` (release + build
+commit), `prompt_version` (a fingerprint of the system prompt and tool contracts), the model and the
+source-policy version, so any verdict traces to the exact release that produced it.
+
+**Regression.** The golden set ([`data/golden/golden.json`](../data/golden/golden.json)) lists the claims an
+editor expects in each sample episode and the verdicts they accept. `podcast_agent eval` scores a run on
+claim recall, verdict accuracy and quote validity, compares it with the last release's run, and fails if
+accuracy drops or a quote stops matching. CI posts the report on the pull request: verdicts that changed,
+cost and run-time differences.
+
+```bash
+python -m podcast_agent run data/transcripts data/samples --out new_run
+python -m podcast_agent eval new_run --baseline examples/sample_run --md regression.md
+```
+
+**Seeing what changed.** Code: a GitHub compare of two tags, or `git diff v0.1.0 v0.2.0`. Output: rerun an
+episode on both versions and compare the reports, which shows which verdicts or quotes changed.
+
+**Adding a feature:**
+
+1. Branch from `develop`, build the feature, add its tests.
+2. Open a pull request. CI runs the tests and the golden-set regression.
+3. Review the code diff and the regression report, then merge to `develop`.
+4. Merge `develop` to `main` and tag the release. Argo CD deploys it.
+5. If it breaks, roll back.
+
+**Rollback.** Revert the release commit on `main`, or set the Helm image tag back to the previous version;
+Argo CD syncs the cluster back within minutes, and its history can redeploy an earlier release from the UI.
+Because every result records its version, anything the bad release produced can be found and rerun.
+Later: feature flags, so a feature can be switched off without a redeploy.
+
+## 15. Testing approach
+
+A one-to-one ratio of test lines to code lines is not the goal; it is easy to hit without testing what
+matters. Tests sit where the risk is:
+
+| Area | What is tested |
+|---|---|
+| Guardrails | A paraphrased quote is rejected; a verdict citing an unseen source is rejected; word counts enforced; `finish` blocked until complete |
+| Ingest | Timestamp formats, speaker mapping, filler removal, stutters, raw text never modified, hostile files |
+| Agent loop | End-to-end run with a scripted fake model, including self-correction after a rejection |
+| Store and worker | A rerun keeps disputes; two workers never take the same job; a bad upload fails only its job; odd search input never breaks a query |
+| GUI | Every page renders; the report shows verdicts and raw vs clean; a quote jumps to its line; transcript HTML is escaped; disputes resolve |
+| Quality | The golden set, run in CI on every prompt, model or source change |
+
+Coverage is tracked on the guardrail, ingest, tools and store modules, and kept high there rather than
+across the whole codebase.
