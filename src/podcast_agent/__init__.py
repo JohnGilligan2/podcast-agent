@@ -2,7 +2,7 @@
 
 import os
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # The release that produced a result: semantic version plus the git commit when the image was built
 # with one (docker build --build-arg BUILD_SHA=$(git rev-parse --short HEAD)).

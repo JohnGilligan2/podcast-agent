@@ -22,6 +22,14 @@ def _evidence(e) -> str:
     return f"{link} ({TIER_TAGS.get(e.tier or '', e.tier or '?')})"
 
 
+READING_WPM = 200  # average adult silent-reading speed
+
+
+def reading_minutes(words: int) -> int:
+    """Minutes to read `words` at READING_WPM, rounded, never less than 1."""
+    return max(1, round(words / READING_WPM))
+
+
 def to_markdown(r: EpisodeReport) -> str:
     out: list[str] = [f"# {r.title}", ""]
     people = ", ".join(filter(None, [f"**Host:** {r.host}" if r.host else None,
@@ -32,7 +40,8 @@ def to_markdown(r: EpisodeReport) -> str:
         out += [f"> ⚠️ Run error: {r.error}", ""]
 
     if r.summary:
-        out += ["## Summary", "", r.summary.text, "", f"*{r.summary.word_count} words*", "",
+        words = r.summary.word_count
+        out += ["## Summary", "", r.summary.text, "", f"*{words} words · about {reading_minutes(words)} min read*", "",
                 "| Core themes | Key discussions | Outcomes & opinions |", "|---|---|---|"]
         rows = max(len(r.summary.core_themes), len(r.summary.key_discussions), len(r.summary.outcomes))
         for i in range(rows):
