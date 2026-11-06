@@ -7,6 +7,8 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-06
+
 ### Added
 - Report review: claims the agent flagged for human review get a **✔ Mark reviewed** button. A signed-off
   claim turns green ("Reviewed by ana at 2026-11-06 18:42 UTC"), shows ✔️ in the fact-check table, and drops
