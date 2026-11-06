@@ -9,13 +9,13 @@ pytest.importorskip("opentelemetry.sdk")
 
 from opentelemetry.sdk.metrics.export import InMemoryMetricReader  # noqa: E402
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter  # noqa: E402
+from test_tools_and_agent import ScriptedLLM, happy_script  # noqa: E402
 
 from podcast_agent.agent import PodcastAgent  # noqa: E402
 from podcast_agent.config import Settings  # noqa: E402
 from podcast_agent.ingest import load_episode  # noqa: E402
 from podcast_agent.knowledge_base import KnowledgeBase  # noqa: E402
 from podcast_agent.telemetry import OtelTelemetry, Telemetry, setup_telemetry  # noqa: E402
-from test_tools_and_agent import ScriptedLLM, happy_script  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 

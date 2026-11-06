@@ -1,20 +1,61 @@
+# One image, four roles:
+#   agent   batch run over data/transcripts (the brief)              docker compose run --rm agent
+#   worker  processes jobs queued by the GUI                          docker compose up web worker
+#   web     review GUI on http://localhost:8501 (no API key: it never calls Claude)
+#   tests   unit + GUI smoke tests                                    docker compose --profile test run --rm tests
+# worker and web share the `results` volume: the SQLite results store and uploaded files.
+
+x-image: &image
+  build:
+    context: .
+    args:
+      EXTRAS: ${PODCAST_AGENT_EXTRAS:-dev,gui}   # add ",otel" for the optional OpenTelemetry packages
+      BUILD_SHA: ${BUILD_SHA:-}                  # e.g. BUILD_SHA=$(git rev-parse --short HEAD)
+  image: podcast-agent:latest
+
 services:
   agent:
-    build:
-      context: .
-      args:
-        EXTRAS: ${PODCAST_AGENT_EXTRAS:-dev}   # "dev,otel" adds the optional OpenTelemetry packages
-    image: podcast-agent:latest
+    <<: *image
     env_file: .env            # must contain ANTHROPIC_API_KEY
     volumes:
       - ./output:/app/output  # reports, traces and run.log land on the host
       - ./data:/app/data:ro   # drop new transcripts into data/transcripts without rebuilding
+      - results:/app/var      # CLI runs also appear in the GUI's history
     command: ["run"]
 
+  worker:
+    <<: *image
+    env_file: .env
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data:ro
+      - results:/app/var
+    command: ["worker"]
+    restart: unless-stopped
+    stop_grace_period: 5m     # SIGTERM lets running episodes finish before the container stops
+
+  web:
+    <<: *image
+    volumes:
+      - ./data:/app/data:ro
+      - results:/app/var
+    command: ["gui", "--host", "0.0.0.0", "--port", "8501"]
+    ports:
+      - "8501:8501"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
   tests:
-    image: podcast-agent:latest
+    <<: *image
     entrypoint: ["python", "-m", "pytest", "-q"]
     profiles: ["test"]
+
+volumes:
+  results: {}
 
 # Optional, not needed to run the agent: a local observability stack (OTel Collector, Prometheus,
 # Jaeger, Grafana) lives in observability/docker-compose.yml. See observability/README.md.

@@ -1,0 +1,22 @@
+# Argo CD watches the Helm chart on main and keeps the cluster in sync with it.
+# Rollback: revert the release commit on main (or set image.tag back), and Argo CD syncs the previous
+# version within minutes. Argo CD's own history can also redeploy any earlier sync from its UI.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podcast-agent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/JohnGilligan2/podcast-agent.git
+    targetRevision: main
+    path: deploy/helm/podcast-agent
+    helm:
+      valueFiles: [values.yaml]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: podcast-agent
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}
+    syncOptions: [CreateNamespace=true]

@@ -9,3 +9,10 @@ __pycache__
 .pytest_cache
 output
 *.egg-info
+var
+*.db
+*.db-*
+.env.*
+.github
+deploy
+observability

@@ -1,0 +1,24 @@
+{{- include "pa.guards" . }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pa.name" . }}-results
+  labels: {{- include "pa.labels" . | nindent 4 }}
+spec:
+  accessModes: [{{ .Values.store.persistence.accessMode }}]
+  {{- with .Values.store.persistence.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.store.persistence.size }}
+{{- if and .Values.clients.seed (not .Values.clients.existingConfigMap) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pa.name" . }}-seed
+  labels: {{- include "pa.labels" . | nindent 4 }}
+data:
+  default.json: {{ .Values.clients.seed | toJson | quote }}
+{{- end }}

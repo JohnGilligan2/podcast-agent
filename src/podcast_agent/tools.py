@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from .ingest import HONORIFICS, Episode, normalize_timestamp
 from .knowledge_base import KnowledgeBase
-from .sources import TRUSTED_TIERS, UNTRUSTED_MAX_CONFIDENCE, ClientSources
 from .schemas import (
     VERDICT_LABELS,
     Claim,
@@ -27,6 +27,7 @@ from .schemas import (
     Quote,
     Summary,
 )
+from .sources import TRUSTED_TIERS, UNTRUSTED_MAX_CONFIDENCE, ClientSources
 
 SUMMARY_MIN_WORDS, SUMMARY_MAX_WORDS = 200, 300
 WORD_RE = re.compile(r"[A-Za-z0-9]+(?:['’\-][A-Za-z0-9]+)*")

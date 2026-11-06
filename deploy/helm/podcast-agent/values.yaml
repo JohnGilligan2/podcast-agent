@@ -1,0 +1,87 @@
+# Deployment switches only: what changes when you redeploy.
+# Not here, on purpose:
+#   - per-client trusted/blocked sources and pinned facts: client data that changes often. It lives in
+#     the database (v0.2 admin page); in v0.1 the policy files come from clients.existingConfigMap,
+#     created outside git.
+#   - the API key: a Kubernetes Secret created outside the repo (for example by External Secrets).
+
+image:
+  repository: ghcr.io/johngilligan2/podcast-agent
+  tag: ""                     # empty = Chart.appVersion; CI writes the release tag here
+  pullPolicy: IfNotPresent
+
+# ---- model ------------------------------------------------------------------------------------------
+agent:
+  model: claude-opus-5-5
+  effort: medium              # low | medium | high | xhigh | max
+  maxSteps: 25
+  webSearch: true
+  webSearchMaxUses: 8
+
+secrets:
+  apiKeySecretName: podcast-agent-anthropic   # the Secret's name, never the key itself
+  apiKeySecretKey: ANTHROPIC_API_KEY
+
+# ---- web GUI ----------------------------------------------------------------------------------------
+gui:
+  enabled: true
+  replicas: 1                 # >1 needs store.backend=postgres (v0.2): SQLite is one file on one volume
+  autoscaling:                # horizontal pod autoscaler on web traffic (CPU)
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: "1", memory: 512Mi}
+
+# ---- MCP server (Claude and other chat tools) --------------------------------------------------------
+mcp:
+  enabled: false              # reserved: the MCP server ships in v0.2
+
+# ---- agent workers ----------------------------------------------------------------------------------
+worker:
+  replicas: 1
+  concurrency: 3              # episodes in parallel per pod (threads: the work is waiting on Claude)
+  terminationGracePeriodSeconds: 600   # SIGTERM: finish running episodes, take no new ones
+  autoscaling:                # KEDA on job-queue depth, 0 -> N; needs store.backend=postgres (v0.2)
+    enabled: false
+    minReplicas: 0
+    maxReplicas: 10
+    queuedJobsPerPod: 3
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: "1", memory: 1Gi}
+
+# ---- results store ----------------------------------------------------------------------------------
+store:
+  backend: sqlite             # sqlite (v0.1) | postgres + OpenSearch (v0.2)
+  persistence:
+    size: 5Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+
+# ---- client source policies -------------------------------------------------------------------------
+clients:
+  existingConfigMap: ""       # ConfigMap of <client-id>.json policy files, created outside the chart
+  seed: {}                    # optional default trusted-source list, used only to seed a new client
+  # seed:
+  #   client_id: default
+  #   name: Default
+  #   search_mode: prefer_trusted
+  #   trusted_domains: [{domain: reuters.com, topics: [news]}]
+  #   blocked_domains: [quora.com]
+
+# ---- ingress ----------------------------------------------------------------------------------------
+ingress:
+  enabled: false
+  className: nginx
+  host: podcast-agent.example.com
+  annotations: {}
+  tls:
+    enabled: true
+    secretName: podcast-agent-tls
+
+otel:
+  enabled: false
+  endpoint: http://otel-collector.observability:4318

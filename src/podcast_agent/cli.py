@@ -6,6 +6,9 @@
     python -m podcast_agent run --no-web-search      # offline: pinned facts + local KB only
     python -m podcast_agent kb-search "FDA AI devices"
     python -m podcast_agent sources                  # show the client's source policy
+    python -m podcast_agent worker                   # process jobs queued by the web GUI
+    python -m podcast_agent gui                      # start the web GUI (pip install ".[gui]")
+    python -m podcast_agent eval output/ --baseline examples/sample_run   # golden-set regression
 """
 
 from __future__ import annotations
@@ -28,6 +31,7 @@ from .ingest import Episode, load_episode
 from .knowledge_base import KnowledgeBase
 from .render import write_episode, write_index
 from .sources import ClientSources
+from .store import open_store
 from .telemetry import setup_telemetry
 
 console = Console()
@@ -148,6 +152,15 @@ def cmd_run(args: argparse.Namespace) -> int:
     reports = [done[ep.episode_id] for ep in episodes if ep.episode_id in done]   # input order
     telemetry.shutdown()   # flush spans and metrics before exit
     index = write_index(reports, settings.output_dir)
+    if not args.no_store:
+        try:   # results also go to the store, so CLI runs show up in the GUI's history
+            store = open_store(settings.db_path)
+            by_id = {ep.episode_id: ep for ep in episodes}
+            for r in reports:
+                store.save_episode(r, by_id.get(r.episode_id))
+        except Exception as exc:  # noqa: BLE001 — the files on disk are the deliverable; the store is extra
+            logger.warning("results store unavailable (%s); report files were still written", exc,
+                           extra={"episode": "run"})
 
     table = Table(title="Run summary")
     for col in ("Episode", "Status", "✅", "⚠️", "❓", "Review", "Turns", "Rejected", "Cost $"):
@@ -161,6 +174,62 @@ def cmd_run(args: argparse.Namespace) -> int:
     console.print(table)
     console.print(f"Reports written to [bold]{settings.output_dir}[/bold] (index: {index.name})")
     return 0 if len(reports) == len(episodes) and all(r.status == "complete" for r in reports) else 1
+
+
+def _settings_for_worker(args: argparse.Namespace) -> Settings:
+    settings = Settings.from_env()
+    overrides = {k: v for k, v in {"concurrency": args.concurrency,
+                                   "output_dir": Path(args.out) if args.out else None}.items() if v is not None}
+    return replace(settings, **overrides)
+
+
+def cmd_worker(args: argparse.Namespace) -> int:
+    from .llm import ClaudeClient
+    from .worker import run_worker
+
+    settings = _settings_for_worker(args)
+    logger = setup_logging(args.verbose, settings.output_dir / "worker.log")
+    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
+        console.print("[red]ANTHROPIC_API_KEY is not set.[/red] Put it in .env (see .env.example).")
+        return 2
+    kb = KnowledgeBase.load(settings.kb_path)
+    llm = ClaudeClient(settings)
+    telemetry = setup_telemetry(settings.otel)
+    agents: dict[tuple[str, bool], PodcastAgent] = {}
+
+    def make_agent(client: str, web_search: bool) -> PodcastAgent:
+        key = (client or "default", web_search)
+        if key not in agents:   # one agent per (client policy, web search) pair, reused across jobs
+            run_settings = replace(settings, enable_web_search=web_search, client_config=resolve_client(key[0]))
+            agents[key] = PodcastAgent(llm, kb, run_settings, logger,
+                                       sources=ClientSources.load(run_settings.client_config), telemetry=telemetry)
+        return agents[key]
+
+    run_worker(open_store(settings.db_path), settings, logger, make_agent, once=args.once)
+    telemetry.shutdown()
+    return 0
+
+
+def cmd_gui(args: argparse.Namespace) -> int:
+    try:
+        from streamlit.web import cli as stcli
+    except ImportError:
+        console.print('[red]The GUI needs Streamlit:[/red] pip install ".[gui]"')
+        return 2
+    app = Path(__file__).with_name("gui.py")
+    sys.argv = ["streamlit", "run", str(app), "--server.port", str(args.port), "--server.address", args.host,
+                "--server.headless", "true", "--browser.gatherUsageStats", "false"]
+    return stcli.main()
+
+
+def cmd_eval(args: argparse.Namespace) -> int:
+    from .evaluate import DEFAULT_GOLDEN, run_eval
+
+    ok, md = run_eval(args.reports, args.golden or DEFAULT_GOLDEN, args.baseline)
+    if args.md:
+        Path(args.md).write_text(md, encoding="utf-8")
+    console.print(md, markup=False)
+    return 0 if ok else 1
 
 
 def _client(args: argparse.Namespace) -> ClientSources:
@@ -211,8 +280,28 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--otel", action="store_true",
                      help="send OpenTelemetry traces and metrics (OTEL_EXPORTER_OTLP_ENDPOINT, default localhost:4318)")
     run.add_argument("--client", help="client source policy: id under data/clients/ or a path (default: default)")
+    run.add_argument("--no-store", action="store_true", help="do not save results to the results store")
     run.add_argument("-v", "--verbose", action="store_true")
     run.set_defaults(func=cmd_run)
+
+    wk = sub.add_parser("worker", help="process jobs queued by the web GUI (stops cleanly on SIGTERM)")
+    wk.add_argument("--once", action="store_true", help="process the queue, then exit")
+    wk.add_argument("--concurrency", type=int, help="jobs run in parallel (default: PODCAST_AGENT_CONCURRENCY)")
+    wk.add_argument("--out", help="output folder for report files (default: ./output)")
+    wk.add_argument("-v", "--verbose", action="store_true")
+    wk.set_defaults(func=cmd_worker)
+
+    gui = sub.add_parser("gui", help="start the web GUI")
+    gui.add_argument("--port", type=int, default=8501)
+    gui.add_argument("--host", default="127.0.0.1", help="use 0.0.0.0 inside a container")
+    gui.set_defaults(func=cmd_gui)
+
+    ev = sub.add_parser("eval", help="score a run against the golden set; compare with a baseline run")
+    ev.add_argument("reports", help="run folder, all_reports.json, or folder of <episode>/report.json")
+    ev.add_argument("--golden", help="golden set (default: data/golden/golden.json)")
+    ev.add_argument("--baseline", help="the last release's run, to report what changed")
+    ev.add_argument("--md", help="also write the report to this markdown file")
+    ev.set_defaults(func=cmd_eval)
 
     kbs = sub.add_parser("kb-search", help="query the local knowledge base")
     kbs.add_argument("query")

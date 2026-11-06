@@ -1,0 +1,59 @@
+{
+  "description": "Golden set: claims an editor expects the agent to find in each sample episode, and the verdicts an editor accepts. Checked by hand against public sources. Resolved GUI disputes are the source of new entries (manual in v0.1, automatic in v0.2).",
+  "version": "2026-11-06",
+  "gates": {
+    "min_claim_recall": 0.8,
+    "min_verdict_accuracy": 0.8,
+    "min_quote_validity": 1.0
+  },
+  "episodes": {
+    "ep001": {
+      "transcript": "data/transcripts/ep001_remote_work.json",
+      "claims": [
+        {"id": "remote-handbooks", "match": ["handbook"], "verdicts": ["verified"],
+         "note": "GitLab, Automattic and Doist publish remote-work handbooks."},
+        {"id": "loneliness", "match": ["lonel"], "verdicts": ["verified"],
+         "note": "Loneliness is a top remote-work complaint in Buffer's State of Remote Work surveys."},
+        {"id": "talent-prediction", "match": ["talent"], "verdicts": ["unverifiable"],
+         "note": "Prediction: cannot be verified."}
+      ]
+    },
+    "ep002": {
+      "transcript": "data/transcripts/ep002_ai_healthcare.json",
+      "claims": [
+        {"id": "fda-autonomy", "match": ["fda"], "verdicts": ["possibly_outdated_or_inaccurate"],
+         "note": "The FDA has authorised autonomous AI (IDx-DR, 2018), so 'full autonomy isn't happening' overstates it."},
+        {"id": "data-bias", "match": ["bias"], "verdicts": ["verified"],
+         "note": "Obermeyer et al., Science 2019."},
+        {"id": "pandemic-adoption", "match": ["pandemic"], "verdicts": ["verified"]},
+        {"id": "copilot-prediction", "match": ["copilot"], "verdicts": ["unverifiable"]}
+      ]
+    },
+    "ep003": {
+      "transcript": "data/transcripts/ep003_bootstrapping.json",
+      "claims": [
+        {"id": "samir-anecdote", "match": ["18 months"], "verdicts": ["unverifiable"],
+         "note": "Personal anecdote."},
+        {"id": "vc-dilution", "match": ["dilut"], "verdicts": ["verified"]}
+      ]
+    },
+    "ep000": {
+      "transcript": "data/samples/ep000_mars_sample.txt",
+      "claims": [
+        {"id": "msr-2026-launch", "match": ["sample return"], "verdicts": ["possibly_outdated_or_inaccurate"],
+         "note": "Mars Sample Return was restructured; no 2026 launch."},
+        {"id": "perseverance-samples", "match": ["perseverance"], "verdicts": ["verified"]}
+      ]
+    },
+    "ep900": {
+      "transcript": "data/samples/ep900_messy.txt",
+      "claims": [
+        {"id": "amazon-ads-50b", "match": ["amazon"], "verdicts": ["possibly_outdated_or_inaccurate", "verified"],
+         "note": "True as a floor (>$50B) but out of date: ~$56B in 2024 and higher in 2025. Both verdicts accepted."},
+        {"id": "ftc-fake-reviews", "match": ["ftc"], "verdicts": ["verified"],
+         "note": "FTC final rule banning fake reviews, August 2024."},
+        {"id": "asyncio-anecdote", "match": ["async"], "verdicts": ["unverifiable"]}
+      ]
+    }
+  }
+}

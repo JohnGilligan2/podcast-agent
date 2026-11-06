@@ -15,6 +15,8 @@ curated local knowledge base keeps the agent working offline and in tests.
 | Agent reasoning logs | [`examples/sample_run/run.log`](examples/sample_run/run.log) and per-episode `trace.jsonl` |
 | Deployment strategy (diagram + narrative) | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Client source policies | [`data/clients/`](data/clients) |
+| Review GUI (upload, job status, report review, history, disputes) | [`gui.py`](src/podcast_agent/gui.py) · `docker compose up web worker` → http://localhost:8501 |
+| Golden set, regression report, CI, Helm chart | [`data/golden/`](data/golden), [`.github/workflows/`](.github/workflows), [`deploy/`](deploy), [`CHANGELOG.md`](CHANGELOG.md) |
 
 ---
 
@@ -36,16 +38,45 @@ docker compose run --rm agent run --client example_healthtech                   
 docker compose run --rm agent run --no-web-search                               # offline: pinned facts + local KB
 docker compose run --rm agent sources --client example_healthtech               # show a client's policy
 docker compose run --rm agent kb-search "FDA autonomous AI"                     # query the local KB
-docker compose --profile test run --rm tests                                    # unit tests (no API key needed)
+docker compose --profile test run --rm tests                                    # unit + GUI tests (no API key needed)
 ```
+
+### Review GUI
+
+```bash
+docker compose up web worker   # GUI on http://localhost:8501; the worker runs the jobs
+```
+
+```mermaid
+flowchart LR
+    E[Editor] -->|upload .json / .txt| W[web: Streamlit GUI]
+    W -->|queue job| S[(results volume<br/>SQLite store + uploads)]
+    S -->|claim job| K[worker] -->|agent loop| C[Claude + web search]
+    K -->|episodes · claims · lines| S
+    S -->|reports, history, disputes| W
+```
+
+| Page | What it does |
+|---|---|
+| **Upload** | Drop in transcripts, choose the client source policy and web search on/off; a file that can't be parsed is rejected on the spot |
+| **Jobs** | Live status of every run (refreshes every 3 s): the agent's latest step, time and cost |
+| **Report review** | Summary, takeaways, quotes, tags and the fact-check table on the left; the transcript on the right, **raw and clean side by side** with the words cleaning removed struck through. **↪ Show line** jumps from any quote or claim to its line |
+| **History** | Full-text search over episodes, quotes, claims and transcript lines; filter claims by verdict; release and prompt version per episode |
+| **Disputes** | Flag a verdict or quote with a note, then resolve or reopen it; disputes stay with the episode across reruns |
+
+The GUI holds no API key and never calls Claude; only the worker does. CLI runs are saved to the same
+store, so they show up in History too. Deep link to a report: `http://localhost:8501/?page=Report%20review&episode=ep002`.
 
 ### Without Docker (Python 3.11+)
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+pip install -e ".[dev,gui]"
 python -m podcast_agent run        # same CLI as above
+python -m podcast_agent gui        # review GUI on http://localhost:8501 …
+python -m podcast_agent worker     # … and, in a second terminal, the worker that runs uploaded jobs
+python -m podcast_agent eval output --baseline examples/sample_run   # golden-set regression report
 pytest -q
 ```
 
@@ -254,7 +285,10 @@ For each episode, `output/<episode_id>/` contains:
 | `report.json` | The same as structured data ([`schemas.py`](src/podcast_agent/schemas.py)) plus client, policy version and run metrics (tokens, cost, turns, rejected calls, KB and web searches) |
 | `trace.jsonl` | Every event: reasoning summaries, tool calls with full inputs, tool results, web results, errors |
 
-Plus `output/index.md` (run overview), `output/all_reports.json`, and `output/run.log`.
+Plus `output/index.md` (run overview), `output/all_reports.json`, and `output/run.log`. Every report records
+the release (`code_version`), the prompt fingerprint (`prompt_version`) and the model, so any verdict traces
+to what produced it. Results are also saved to the results store (`var/podcast_agent.db`, SQLite), which
+the GUI reads; `--no-store` skips that.
 
 ---
 
@@ -289,15 +323,23 @@ src/podcast_agent/
   knowledge_base.py  BM25 retrieval (pinned facts + curated KB)
   schemas.py         pydantic output model
   render.py          report.md / index.md writers
-  cli.py             command line (run, sources, kb-search)
+  store.py           results store + job queue (SQLite today, one interface for Postgres later)
+  worker.py          queue worker: runs uploaded jobs, stops cleanly on SIGTERM
+  gui.py             Streamlit review GUI
+  evaluate.py        golden-set scoring and release-to-release regression report
+  cli.py             command line (run, worker, gui, eval, sources, kb-search)
 data/
   transcripts/       the three provided episodes
   samples/           a messy .txt transcript in the format from the brief
   clients/           source policies: default.json, example_healthtech.json
   knowledge_base.json curated reference sources (with as_of dates)
-tests/               72 tests: guardrails, sources, messy ingest, hostile inputs, agent loop, telemetry (no API key)
+  golden/            golden set: expected claims and accepted verdicts per sample episode
+tests/               103 tests: guardrails, sources, messy ingest, hostile inputs, agent loop, store, worker, GUI, golden set, telemetry (no API key)
+deploy/              Helm chart (deployment switches only) and Argo CD application
+.github/workflows/   CI (lint, tests, golden set) and release (image + Helm tag)
 observability/       optional scaffolding: OTel Collector, Prometheus, Jaeger, Grafana dashboard
-docs/DEPLOYMENT.md   production deployment strategy
+docs/DEPLOYMENT.md   production deployment strategy, delivery pipeline, versioning and rollback
+CHANGELOG.md         what changed in each release
 examples/sample_run/ committed outputs from a real run
 ```
 
@@ -316,7 +358,8 @@ or without a collector, the run continues normally. A ready-to-try local stack a
 
 ## Extending it
 
-- **New client** → add `data/clients/<id>.json`; run with `--client <id>`.
+- **New client** → add `data/clients/<id>.json` (real client policies stay out of git; see `.gitignore`); run with `--client <id>`.
+- **New golden case** → when a dispute is resolved, add the claim and accepted verdict to `data/golden/golden.json`.
 - **New check or deliverable** → add a tool definition and handler in `tools.py`, mention it in `prompts.py`.
 - **New offline knowledge** → add entries to `data/knowledge_base.json` (keep `as_of` accurate).
 - **Different provider** → change `llm.py` only (e.g. `AnthropicBedrockMantle` for Claude on Bedrock).

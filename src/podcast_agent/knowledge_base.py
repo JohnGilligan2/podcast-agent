@@ -75,7 +75,7 @@ class KnowledgeBase:
         self._idf = {t: math.log(1 + (n - c + 0.5) / (c + 0.5)) for t, c in df.items()}
 
     @classmethod
-    def load(cls, path: str | Path) -> "KnowledgeBase":
+    def load(cls, path: str | Path) -> KnowledgeBase:
         try:
             data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
             docs = [KBDocument(**{k: d[k] for k in KBDocument.__dataclass_fields__ if k in d})
@@ -84,7 +84,7 @@ class KnowledgeBase:
             raise ValueError(f"{path}: not a valid knowledge base file ({exc!r})") from exc
         return cls(docs)
 
-    def with_documents(self, extra: list[KBDocument]) -> "KnowledgeBase":
+    def with_documents(self, extra: list[KBDocument]) -> KnowledgeBase:
         """A new index that also covers `extra` (e.g. a client's pinned facts)."""
         return KnowledgeBase(self.documents + list(extra), self.k1, self.b) if extra else self
 
@@ -93,7 +93,7 @@ class KnowledgeBase:
         if not q:
             return []
         hits = []
-        for doc, tf, length in zip(self.documents, self._tf, self._len):
+        for doc, tf, length in zip(self.documents, self._tf, self._len, strict=True):
             score = 0.0
             for term in q:
                 f = tf.get(term, 0)

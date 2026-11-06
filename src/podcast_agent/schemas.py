@@ -106,6 +106,8 @@ class EpisodeReport(BaseModel):
     source_file: str
     client_id: str = "none"
     source_policy_version: str = "none"
+    code_version: str = "unknown"     # release that produced this result (semantic version + build)
+    prompt_version: str = "unknown"   # fingerprint of the system prompt and tool contracts
     status: Literal["complete", "incomplete", "failed"]
     error: str | None = None
     plan: list[PlanStep] = []

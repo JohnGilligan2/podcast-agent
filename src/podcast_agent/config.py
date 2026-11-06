@@ -64,9 +64,14 @@ class Settings:
     output_dir: Path = field(default=PROJECT_ROOT / "output")
     client_config: Path = field(default=PROJECT_ROOT / "data" / "clients" / "default.json")
     otel: bool = False                     # OpenTelemetry traces + metrics (pip install ".[otel]")
+    db_path: Path = field(default=PROJECT_ROOT / "var" / "podcast_agent.db")   # results store (SQLite)
+
+    @property
+    def uploads_dir(self) -> Path:
+        return self.db_path.parent / "uploads"
 
     @classmethod
-    def from_env(cls) -> "Settings":
+    def from_env(cls) -> Settings:
         load_dotenv(PROJECT_ROOT / ".env")
         base = cls()
         return replace(
@@ -80,6 +85,7 @@ class Settings:
             otel=_bool("PODCAST_AGENT_OTEL", base.otel),
             kb_path=Path(os.getenv("PODCAST_AGENT_KB", str(base.kb_path))),
             output_dir=Path(os.getenv("PODCAST_AGENT_OUTPUT", str(base.output_dir))),
+            db_path=Path(os.getenv("PODCAST_AGENT_DB", str(base.db_path))),
             client_config=resolve_client(os.getenv("PODCAST_AGENT_CLIENT") or str(base.client_config)),
             web_search_max_uses=_int("PODCAST_AGENT_WEB_SEARCH_MAX_USES", base.web_search_max_uses),
         )
