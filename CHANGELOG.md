@@ -7,6 +7,17 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-06
+
+### Fixed
+- Review GUI: curly apostrophes and dashes in the raw transcript were struck through as if cleaning had
+  removed them. Words are now compared after straightening quotes, so only real removals are marked.
+- Review GUI: results produced before v0.1.0 show "not recorded" for release and prompt, not "unknown".
+- Review GUI: Streamlit's developer toolbar and Deploy button are hidden.
+- CI: the golden-set step could not find `data/` because the package was installed outside the repo.
+  CI now installs in editable mode, and the project root falls back to the working directory.
+- Release workflow: GHCR image names must be lowercase; the repository owner is now lowercased.
+
 ## [0.1.0] - 2026-11-08
 
 First release.
