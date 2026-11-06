@@ -38,7 +38,7 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [0.1.0] - 2026-11-06
 
-First release, the Seekr take-home submission.
+First release.
 
 ### Added
 - Agent loop on Claude (`claude-opus-5-5`, adaptive thinking): plan, tool calls, guardrail
