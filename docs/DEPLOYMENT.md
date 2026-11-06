@@ -221,11 +221,12 @@ The agent, the worker and the GUI all write and read through one small interface
 | `transcript_lines` | episode id, timestamp, speaker, raw text, clean text, ingest flags |
 | `notes` | episode id, summary, takeaways, quotes with timestamps, tags |
 | `claims` | episode id, claim, speaker, timestamp, type, verdict, confidence, rationale, sources, review flag |
+| `reviews` | episode id, claim id, who signed it off, when (claims flagged for human review) |
 | `disputes` | claim or quote id, a copy of its text, note, open/resolved, who, when, resolution |
 | `jobs` | the upload queue: file, client, status, live progress message, attempts, cost |
 
 A rerun replaces an episode's results in one transaction; disputes are kept, because each carries a
-copy of the text it disputes. What clients can do with it: search past episodes, quotes and claims;
+copy of the text it disputes. Review sign-offs are cleared, because a rerun can change the verdicts. What clients can do with it: search past episodes, quotes and claims;
 filter claims by verdict (every ⚠️ this quarter); see how a recurring claim was judged over time; rerun
 old episodes after a source-policy change and compare verdicts; feed resolved disputes into the golden set.
 
@@ -531,8 +532,8 @@ matters. Tests sit where the risk is:
 | Guardrails | A paraphrased quote is rejected; a verdict citing an unseen source is rejected; word counts enforced; `finish` blocked until complete |
 | Ingest | Timestamp formats, speaker mapping, filler removal, stutters, raw text never modified, hostile files |
 | Agent loop | End-to-end run with a scripted fake model, including self-correction after a rejection |
-| Store and worker | A rerun keeps disputes; two workers never take the same job; a bad upload fails only its job; odd search input never breaks a query |
-| GUI | Every page renders; the report shows verdicts and raw vs clean; a quote jumps to its line; transcript HTML is escaped; disputes resolve |
+| Store and worker | A rerun keeps disputes and clears review sign-offs; marking a claim reviewed lowers the needs-review count; two workers never take the same job; a bad upload fails only its job; odd search input never breaks a query |
+| GUI | Every page renders; the report shows verdicts and raw vs clean; a quote jumps to its line; transcript HTML is escaped; disputes resolve; a flagged claim can be marked reviewed and undone |
 | Quality | The golden set, run in CI on every prompt, model or source change |
 
 Coverage is tracked on the guardrail, ingest, tools and store modules, and kept high there rather than

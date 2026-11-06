@@ -15,7 +15,7 @@ curated local knowledge base keeps the agent working offline and in tests.
 | Agent reasoning logs | [`examples/sample_run/run.log`](examples/sample_run/run.log) and per-episode `trace.jsonl` |
 | Deployment strategy (diagram + narrative) | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Client source policies | [`data/clients/`](data/clients) |
-| Review GUI (upload, job status, report review, history, disputes) | [`gui.py`](src/podcast_agent/gui.py) · `docker compose up web worker` → http://localhost:8501 |
+| Review GUI (upload, job status, report review and sign-off, history, disputes) | [`gui.py`](src/podcast_agent/gui.py) · `docker compose up web worker` → http://localhost:8501 |
 | Golden set, regression report, CI, Helm chart | [`data/golden/`](data/golden), [`.github/workflows/`](.github/workflows), [`deploy/`](deploy), [`CHANGELOG.md`](CHANGELOG.md) |
 
 ---
@@ -60,7 +60,7 @@ flowchart LR
 |---|---|
 | **Upload** | Drop in transcripts, choose the client source policy and web search on/off; a file that can't be parsed is rejected on the spot |
 | **Jobs** | Live status of every run (refreshes every 3 s): the agent's latest step, time and cost |
-| **Report review** | Summary, takeaways, quotes, tags and the fact-check table on the left; the transcript on the right, **raw and clean side by side** with the words cleaning removed struck through. **↪ Show line** jumps from any quote or claim to its line |
+| **Report review** | Summary, takeaways, quotes, tags and the fact-check table on the left; the transcript on the right, **raw and clean side by side** with the words cleaning removed struck through. **↪ Show line** jumps from any quote or claim to its line. A claim flagged 🔎 for human review gets **✔ Mark reviewed**: the reviewer and time are saved and it leaves the "Needs review" count |
 | **History** | Full-text search over episodes, quotes, claims and transcript lines; filter claims by verdict; release and prompt version per episode |
 | **Disputes** | Flag a verdict or quote with a note, then resolve or reopen it; disputes stay with the episode across reruns |
 
