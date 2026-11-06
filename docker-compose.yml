@@ -1,0 +1,15 @@
+services:
+  agent:
+    build: .
+    image: podcast-agent:latest
+    env_file: .env            # must contain ANTHROPIC_API_KEY
+    volumes:
+      - ./output:/app/output  # reports, traces and run.log land on the host
+      - ./data:/app/data:ro   # drop new transcripts into data/transcripts without rebuilding
+    command: ["run"]
+
+  tests:
+    build: .
+    image: podcast-agent:latest
+    entrypoint: ["python", "-m", "pytest", "-q"]
+    profiles: ["test"]

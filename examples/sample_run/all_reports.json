@@ -1,0 +1,1341 @@
+[
+  {
+    "episode_id": "ep001",
+    "title": "The Future of Remote Work",
+    "host": "Sarah Johnson",
+    "guests": [
+      "Mark Rivera"
+    ],
+    "source_file": "ep001_remote_work.json",
+    "client_id": "default",
+    "source_policy_version": "b46f0e416d7b",
+    "status": "complete",
+    "error": null,
+    "plan": [
+      {
+        "step": 1,
+        "action": "Draft and submit summary",
+        "tool": "submit_summary",
+        "rationale": "Core deliverable"
+      },
+      {
+        "step": 2,
+        "action": "Submit takeaways, verbatim quotes, tags",
+        "tool": "submit_key_notes",
+        "rationale": "Show notes"
+      },
+      {
+        "step": 3,
+        "action": "Register check-worthy claims (GitLab/Automattic/Doist handbooks, predictions)",
+        "tool": "register_claims",
+        "rationale": "Fact-check set"
+      },
+      {
+        "step": 4,
+        "action": "Search KB and web for evidence",
+        "tool": "search_knowledge_base, web_search",
+        "rationale": "Evidence gathering, prefer trusted domains"
+      },
+      {
+        "step": 5,
+        "action": "Record verdicts",
+        "tool": "record_verdict",
+        "rationale": "One per claim"
+      },
+      {
+        "step": 6,
+        "action": "Finish with reviewer notes",
+        "tool": "finish",
+        "rationale": "Close out"
+      }
+    ],
+    "summary": {
+      "text": "In this episode of Work Reimagined, host Sarah Johnson talks with guest Mark Rivera about what remote work looks like in 2025 and beyond. Rivera argues that remote work is about more than working from anywhere. He sees it as an operating model built on async-first communication, thorough documentation, autonomy, structured processes and trust.\n\nHe points to GitLab, Automattic and Doist as companies that have written handbooks covering nearly everything, so employees can find answers without constant guidance. Asked whether this works for smaller teams, Rivera says even small groups benefit from clear documentation, because it cuts down on context-switching and keeps knowledge from being siloed.\n\nOn tools, Rivera says Zoom and Slack help but are not the answer. Culture is what matters, and relying on Slack for everything can lead to burnout. On productivity, he recommends judging outcomes rather than hours: set goals, track progress on deliverables and trust the team. In his view, transparency matters more than frequent check-ins.\n\nJohnson raises loneliness as a common downside of remote work. Rivera suggests virtual coffee chats, occasional in-person retreats and team rituals, saying that remote work need not be isolating but does take intention.\n\nLooking ahead, Rivera predicts that remote-first companies will dominate hiring, that local offices may become optional hubs, and that async culture will become standard practice. His closing advice for teams moving to remote work is to focus on documentation, set clear goals, invest in culture and trust the team, which he calls the foundation for success.",
+      "word_count": 250,
+      "core_themes": [
+        "Async-first remote culture",
+        "Documentation and handbooks",
+        "Culture over tools",
+        "Outcome-based productivity",
+        "Combating isolation",
+        "Future of work predictions"
+      ],
+      "key_discussions": [
+        "Remote work as process and trust rather than location",
+        "GitLab, Automattic and Doist handbook examples",
+        "Whether documentation scales to small teams",
+        "Limits of Zoom and Slack and burnout risk",
+        "Measuring productivity without micromanagement",
+        "Addressing loneliness with rituals and retreats"
+      ],
+      "outcomes": [
+        "Rivera predicts remote-first firms will dominate talent acquisition",
+        "Offices may become optional hubs",
+        "Async culture expected to become standard",
+        "Advice: document, set clear goals, invest in culture, trust the team"
+      ]
+    },
+    "key_notes": {
+      "takeaways": [
+        "Treat remote work as an operating model (async-first, documented, autonomous), not just a location choice.",
+        "Write a handbook so employees can self-serve answers; even small teams benefit by reducing context-switching and knowledge silos.",
+        "Don't rely on Slack for everything—tools support culture but can drive burnout if overused.",
+        "Measure outcomes over hours: set goals, track deliverables, and prioritize transparency over check-ins.",
+        "Fight isolation intentionally with virtual coffee chats, team rituals and occasional in-person retreats."
+      ],
+      "quotes": [
+        {
+          "timestamp": "00:00:45",
+          "speaker": "Mark Rivera",
+          "quote": "Being remote doesn't just mean a location; it means structured processes and trust.",
+          "why_notable": "Reframes remote work as a structural and cultural model.",
+          "raw_line": "Not quite. It’s more about async-first culture, documentation, and autonomy. Being remote doesn’t just mean a location; it means structured processes and trust."
+        },
+        {
+          "timestamp": "00:02:45",
+          "speaker": "Mark Rivera",
+          "quote": "They help, but tools aren't the solution. Culture is.",
+          "why_notable": "Central thesis on culture over tooling.",
+          "raw_line": "They help, but tools aren’t the solution. Culture is. Slack is great, but if you rely on it for everything, people will burn out."
+        },
+        {
+          "timestamp": "00:04:10",
+          "speaker": "Mark Rivera",
+          "quote": "Remote doesn't mean isolated; it just needs intention.",
+          "why_notable": "Concise answer to the loneliness concern.",
+          "raw_line": "Regular virtual coffee chats, occasional in-person retreats, and team rituals help. Remote doesn’t mean isolated; it just needs intention."
+        },
+        {
+          "timestamp": "00:05:00",
+          "speaker": "Mark Rivera",
+          "quote": "Remote-first companies will dominate talent acquisition.",
+          "why_notable": "Key forward-looking prediction.",
+          "raw_line": "Remote-first companies will dominate talent acquisition. Local offices might become optional hubs, and async culture will become standard practice."
+        }
+      ],
+      "topics": [
+        "remote-work",
+        "async-communication",
+        "documentation",
+        "company-culture",
+        "productivity",
+        "future-of-work"
+      ]
+    },
+    "fact_checks": [
+      {
+        "claim_id": "C1",
+        "claim": "GitLab, Automattic, and Doist have written handbooks for everything so employees can work without constant guidance.",
+        "speaker": "Mark Rivera",
+        "timestamp": "00:01:20",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.75,
+        "rationale": "GitLab publishes a public, thousands-of-pages handbook and describes itself as \"handbook-first\", so employees can find answers on their own without waiting for someone. Automattic (internal P2 blogs) and Doist (async-first) both rely heavily on written, asynchronous documentation. \"Handbooks for everything\" is rhetorical shorthand. It fits GitLab most precisely; for Automattic and Doist it describes a documentation-heavy culture rather than a single formal handbook.",
+        "evidence": [
+          {
+            "source_id": "kb-gitlab-all-remote",
+            "title": "GitLab operates as an all-remote company with a public handbook",
+            "url": "https://handbook.gitlab.com/",
+            "as_of": "2024-06",
+            "tier": "reference"
+          },
+          {
+            "source_id": "kb-automattic-distributed",
+            "title": "Automattic has been fully distributed since its founding",
+            "url": "https://automattic.com/about/",
+            "as_of": "2024-01",
+            "tier": "reference"
+          },
+          {
+            "source_id": "kb-doist-async",
+            "title": "Doist is a remote-first, async-first company",
+            "url": "https://doist.com/",
+            "as_of": "2023-09",
+            "tier": "reference"
+          },
+          {
+            "source_id": "https://handbook.gitlab.com/handbook/company/culture/all-remote/guide/",
+            "title": "GitLab's Guide to All-Remote",
+            "url": "https://handbook.gitlab.com/handbook/company/culture/all-remote/guide/",
+            "as_of": "430 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C2",
+        "claim": "Relying on Slack for everything leads to burnout.",
+        "speaker": "Mark Rivera",
+        "timestamp": "00:02:45",
+        "claim_type": "factual",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "Trade and press coverage links constant instant-messaging notifications to stress and burnout. However, no trusted or peer-reviewed source retrieved shows that relying on Slack for everything causes burnout. The causal claim is broad and partly opinion.",
+        "evidence": [
+          {
+            "source_id": "https://digiday.com/media/the-pressure-cooker-is-primed-to-explode-how-instant-messaging-tools-are-contributing-to-burnout/",
+            "title": "'The pressure cooker is primed to explode': How instant messaging tools are contributing to burnout",
+            "url": "https://digiday.com/media/the-pressure-cooker-is-primed-to-explode-how-instant-messaging-tools-are-contributing-to-burnout/",
+            "as_of": "1813 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": true,
+        "review_reason": "Only other_web evidence is available; the causal burnout claim lacks trusted-source support."
+      },
+      {
+        "claim_id": "C3",
+        "claim": "Loneliness/lack of connection is often cited as a remote work downside.",
+        "speaker": "Sarah Johnson",
+        "timestamp": "00:03:55",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.9,
+        "rationale": "In Gallup's State of the Global Workplace 2024, fully remote employees reported loneliness at 25%, compared with 16% for fully on-site workers. Buffer's State of Remote Work surveys repeatedly list loneliness among the top struggles of remote workers.",
+        "evidence": [
+          {
+            "source_id": "https://www.gallup.com/workplace/645566/employees-worldwide-feel-lonely.aspx",
+            "title": "1 in 5 Employees Worldwide Feel Lonely",
+            "url": "https://www.gallup.com/workplace/645566/employees-worldwide-feel-lonely.aspx",
+            "as_of": "137 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "https://www.gallup.com/workplace/268076/manage-loneliness-isolation-remote-workers.aspx",
+            "title": "How to Manage the Loneliness and Isolation of Remote Workers",
+            "url": "https://www.gallup.com/workplace/268076/manage-loneliness-isolation-remote-workers.aspx",
+            "as_of": "1204 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "kb-remote-loneliness",
+            "title": "Loneliness is a commonly reported remote-work struggle",
+            "url": "https://buffer.com/state-of-remote-work",
+            "as_of": "2023-02",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C4",
+        "claim": "Remote-first companies will dominate talent acquisition.",
+        "speaker": "Mark Rivera",
+        "timestamp": "00:05:00",
+        "claim_type": "prediction",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "This is a forward-looking prediction. For context, Gallup data show hybrid is the dominant model (about 51-54% of remote-capable US employees) and only about 26% are fully remote. Remote-first companies remain a minority of employers, though remote and hybrid roles draw a disproportionate share of job applications. The prediction cannot be tested yet, and current data do not show remote-first firms dominating.",
+        "evidence": [
+          {
+            "source_id": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+            "title": "Global Indicator: Hybrid Work - Gallup",
+            "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+            "as_of": "10 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "https://www.gallup.com/workplace/316313/understanding-and-managing-remote-workers.aspx",
+            "title": "A Strategic Guide for Managing Hybrid and Remote Teams - Gallup",
+            "url": "https://www.gallup.com/workplace/316313/understanding-and-managing-remote-workers.aspx",
+            "as_of": "101 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "kb-remote-work-2024-trends",
+            "title": "Hybrid dominates; several large employers tightened office mandates",
+            "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+            "as_of": "2025-01",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C5",
+        "claim": "Local offices might become optional hubs and async culture will become standard practice.",
+        "speaker": "Mark Rivera",
+        "timestamp": "00:05:00",
+        "claim_type": "prediction",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "This is a prediction. Gallup (September 2025) reports that work-location patterns have been stable since 2022, with hybrid dominant, while some large employers (for example Amazon from January 2025) have tightened office mandates. The evidence neither confirms nor rules out offices becoming optional hubs or async culture becoming standard.",
+        "evidence": [
+          {
+            "source_id": "https://www.gallup.com/workplace/694361/hybrid-work-retreat-barely.aspx",
+            "title": "Hybrid Work in Retreat? Barely.",
+            "url": "https://www.gallup.com/workplace/694361/hybrid-work-retreat-barely.aspx",
+            "as_of": "227 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "kb-remote-work-2024-trends",
+            "title": "Hybrid dominates; several large employers tightened office mandates",
+            "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+            "as_of": "2025-01",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      }
+    ],
+    "reviewer_notes": [
+      "C2 (relying on Slack for everything leads to burnout): only other_web sources support it, so it is flagged for human review. Consider presenting it as the guest's opinion.",
+      "C1: 'handbooks for everything' fits GitLab's public handbook exactly. Automattic and Doist are documentation-heavy and async-first, but it may overstate them as formal handbooks.",
+      "C4 and C5 are predictions. Current Gallup data show hybrid is dominant and fully remote is about 26% of remote-capable US employees. Remote-first firms do not dominate yet, so the prediction should not be presented as a trend.",
+      "The episode frames itself around '2025 and beyond' but is being published after November 2026. Editors may want to add a date note.",
+      "Possible transcription oddity at 00:01:50: 'handbooks instead of manuals' (the two are near-synonyms). Check the audio.",
+      "Speakers are clearly labeled and nothing is ambiguous. The guest's credentials or affiliation are not stated in the episode."
+    ],
+    "ingest": {
+      "lines_parsed": 19,
+      "lines_kept": 19,
+      "lines_cleaned": 1,
+      "lines_flagged": 0,
+      "lines_dropped": [],
+      "speakers_mapped": {
+        "Sarah": "Sarah Johnson",
+        "Mark": "Mark Rivera"
+      },
+      "flags": []
+    },
+    "metrics": {
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "model_turns": 5,
+      "tool_calls": 12,
+      "rejected_tool_calls": 0,
+      "searches": 2,
+      "web_searches": 10,
+      "blocked_results_dropped": 0,
+      "input_tokens": 20,
+      "output_tokens": 6073,
+      "cache_read_tokens": 124427,
+      "cache_write_tokens": 26014,
+      "estimated_cost_usd": 0.3014,
+      "duration_seconds": 77.4
+    },
+    "generated_at": "2026-11-06T01:15:23+00:00"
+  },
+  {
+    "episode_id": "ep002",
+    "title": "AI in Healthcare: Hype or Reality?",
+    "host": "David Chen",
+    "guests": [
+      "Dr. Priya Patel",
+      "Alex Moore"
+    ],
+    "source_file": "ep002_ai_healthcare.json",
+    "client_id": "default",
+    "source_policy_version": "b46f0e416d7b",
+    "status": "complete",
+    "error": null,
+    "plan": [
+      {
+        "step": 1,
+        "action": "Submit summary and key notes",
+        "tool": "submit_summary, submit_key_notes",
+        "rationale": "Core deliverables from the transcript"
+      },
+      {
+        "step": 2,
+        "action": "Register check-worthy claims",
+        "tool": "register_claims",
+        "rationale": "Fact-check inputs"
+      },
+      {
+        "step": 3,
+        "action": "Search KB and web for evidence",
+        "tool": "search_knowledge_base, web_search",
+        "rationale": "Gather evidence, prefer trusted domains"
+      },
+      {
+        "step": 4,
+        "action": "Record verdicts and finish",
+        "tool": "record_verdict, finish",
+        "rationale": "Complete report"
+      }
+    ],
+    "summary": {
+      "text": "In this episode of Tech Health Today, host David Chen talks with Dr. Priya Patel and Alex Moore about whether AI in healthcare is hype or reality. Chen opens by saying AI is everywhere but complicated in medicine, and he sets out to separate real uses from inflated expectations.\n\nDr. Patel confirms that diagnostic and triage assistants are already in use. Some hospitals use AI to read X-rays or flag urgent cases, but she stresses that these tools assist clinicians and do not replace them. Moore adds that regulatory barriers are significant. He says the FDA reviews these systems carefully, so fully autonomous AI is unlikely soon. Asked what patients might see directly, Patel points to smart triage chatbots on hospital websites and apps that help patients decide their next steps before seeing a doctor.\n\nMoore names data privacy and bias as major hurdles, because AI learns from existing clinical data that may be skewed. Chen asks why adoption keeps growing anyway. Patel cites efficiency and clinician support, since hospitals want faster reads and fewer errors. Moore says the COVID-19 pandemic sped up digital health adoption, including AI tools.\n\nOn the future, Patel expects AI copilots that suggest treatment plans, with a human always making the final decision. Moore says interoperability is essential and that AI will work best when systems exchange data securely. Chen closes by recommending cautious optimism: AI is powerful, but its role in healthcare should stay assistive and well regulated.",
+      "word_count": 244,
+      "core_themes": [
+        "Hype versus reality of AI in healthcare",
+        "AI as assistive rather than autonomous",
+        "Regulation and FDA oversight",
+        "Data privacy, bias and interoperability"
+      ],
+      "key_discussions": [
+        "AI for X-ray reading and urgent-case flagging in hospitals",
+        "FDA review as a barrier to full autonomy",
+        "Triage chatbots on hospital websites and apps",
+        "Bias in clinical training data and privacy concerns",
+        "Pandemic-driven acceleration of digital health",
+        "Future AI copilots for treatment planning"
+      ],
+      "outcomes": [
+        "Panel agrees AI should support, not replace, clinicians",
+        "Humans should keep the final say on treatment decisions",
+        "Interoperability seen as key to AI's future value",
+        "Host recommends cautious optimism"
+      ]
+    },
+    "key_notes": {
+      "takeaways": [
+        "Today's clinical AI, such as X-ray reading and urgent-case flagging, assists clinicians rather than replacing them.",
+        "FDA review of AI medical tools means fully autonomous AI is unlikely in the near term.",
+        "Patients are most likely to meet AI through triage chatbots on hospital websites and apps.",
+        "Bias in historical clinical data and data privacy are major risks to evaluate in any AI tool.",
+        "Secure interoperability between systems is a prerequisite for AI to deliver its full value."
+      ],
+      "quotes": [
+        {
+          "timestamp": "00:00:55",
+          "speaker": "Dr. Priya Patel",
+          "quote": "But it's assistive, not replacing clinicians.",
+          "why_notable": "Sums up the episode's central position",
+          "raw_line": "Yes. Some hospitals use AI for reading X-rays or flagging urgent cases. But it’s assistive, not replacing clinicians."
+        },
+        {
+          "timestamp": "00:02:20",
+          "speaker": "Alex Moore",
+          "quote": "AI learns from existing clinical data, which may be skewed.",
+          "why_notable": "Explains briefly where AI bias comes from",
+          "raw_line": "Data privacy and bias are major hurdles. AI learns from existing clinical data, which may be skewed."
+        },
+        {
+          "timestamp": "00:04:15",
+          "speaker": "Dr. Priya Patel",
+          "quote": "AI copilots that suggest treatment plans, but a human will always make the final call.",
+          "why_notable": "Gives a human-in-the-loop view of the future",
+          "raw_line": "Yes, AI copilots that suggest treatment plans, but a human will always make the final call."
+        },
+        {
+          "timestamp": "00:05:10",
+          "speaker": "David Chen",
+          "quote": "AI is powerful, but cautious optimism is the way forward.",
+          "why_notable": "The episode's closing message",
+          "raw_line": "Thanks, Priya and Alex. And thanks to our listeners. AI is powerful, but cautious optimism is the way forward."
+        }
+      ],
+      "topics": [
+        "ai-in-healthcare",
+        "medical-imaging",
+        "fda-regulation",
+        "triage-chatbots",
+        "algorithmic-bias",
+        "interoperability",
+        "digital-health"
+      ]
+    },
+    "fact_checks": [
+      {
+        "claim_id": "C1",
+        "claim": "Some hospitals use AI for reading X-rays or flagging urgent cases, as assistive tools rather than replacements for clinicians.",
+        "speaker": "Dr. Priya Patel",
+        "timestamp": "00:00:55",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.9,
+        "rationale": "The FDA's list of AI-enabled devices shows that roughly three quarters are radiology tools. FDA-cleared computer-aided triage (CADt) software reads CT scans and X-rays, flags urgent findings, and is used in many US hospitals. These tools are assistive: the radiologist still makes the diagnosis.",
+        "evidence": [
+          {
+            "source_id": "kb-fda-ai-device-list",
+            "title": "FDA list of AI-enabled medical devices",
+            "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+            "as_of": "2025-07",
+            "tier": "reference"
+          },
+          {
+            "source_id": "kb-radiology-triage-cadt",
+            "title": "AI triage tools flag urgent findings for radiologists",
+            "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+            "as_of": "2025-01",
+            "tier": "reference"
+          },
+          {
+            "source_id": "https://www.fda.gov/medical-devices/digital-health-center-excellence/artificial-intelligence-enabled-medical-devices",
+            "title": "Artificial Intelligence-Enabled Medical Devices",
+            "url": "https://www.fda.gov/medical-devices/digital-health-center-excellence/artificial-intelligence-enabled-medical-devices",
+            "as_of": "45 days ago",
+            "tier": "trusted_web"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C2",
+        "claim": "The FDA reviews AI healthcare systems carefully, so full autonomy isn't happening anytime soon.",
+        "speaker": "Alex Moore",
+        "timestamp": "00:01:15",
+        "claim_type": "factual",
+        "verdict": "possibly_outdated_or_inaccurate",
+        "verdict_label": "⚠️ Possibly outdated/inaccurate",
+        "confidence": 0.7,
+        "rationale": "It is true that the FDA reviews AI devices through the 510(k), De Novo and PMA pathways. But the claim oversimplifies: the FDA authorised the autonomous IDx-DR (LumineticsCore) diabetic retinopathy screening device in 2018. Autonomous AI already exists for narrow tasks, even though most authorised devices are assistive.",
+        "evidence": [
+          {
+            "source_id": "kb-idx-dr-autonomous",
+            "title": "First FDA-authorised autonomous AI diagnostic (IDx-DR, 2018)",
+            "url": "https://www.fda.gov/news-events/press-announcements/fda-permits-marketing-artificial-intelligence-based-device-detect-certain-diabetes-related-eye-problems",
+            "as_of": "2018-04",
+            "tier": "reference"
+          },
+          {
+            "source_id": "kb-fda-ai-device-list",
+            "title": "FDA list of AI-enabled medical devices",
+            "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+            "as_of": "2025-07",
+            "tier": "reference"
+          },
+          {
+            "source_id": "https://iovs.arvojournals.org/article.aspx?articleid=2744233",
+            "title": "FDA-authorized autonomous AI for diabetic retinopathy screening in clinical routine",
+            "url": "https://iovs.arvojournals.org/article.aspx?articleid=2744233",
+            "as_of": "2664 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C3",
+        "claim": "Hospitals deploy smart triage chatbots on websites or apps to help patients figure out next steps before seeing a doctor.",
+        "speaker": "Dr. Priya Patel",
+        "timestamp": "00:01:50",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.8,
+        "rationale": "The reference KB confirms that many health systems and digital-health firms offer symptom checkers or triage chatbots that suggest a level of care before a patient sees a clinician. Their accuracy varies: a 2015 BMJ study found appropriate triage advice in about 57% of test cases.",
+        "evidence": [
+          {
+            "source_id": "kb-symptom-checkers",
+            "title": "Online symptom checkers and triage chatbots",
+            "url": "https://www.bmj.com/content/351/bmj.h3480",
+            "as_of": "2023-01",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C4",
+        "claim": "AI learns from existing clinical data, which may be skewed, making bias a major hurdle.",
+        "speaker": "Alex Moore",
+        "timestamp": "00:02:20",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.85,
+        "rationale": "Obermeyer et al. (Science, 2019) showed that an algorithm trained on historical cost data under-identified Black patients for extra care. The study is widely cited as evidence that models trained on historical clinical data can encode bias.",
+        "evidence": [
+          {
+            "source_id": "kb-algorithmic-bias-obermeyer",
+            "title": "Racial bias in a widely used health-care algorithm (Science, 2019)",
+            "url": "https://www.science.org/doi/10.1126/science.aax2342",
+            "as_of": "2019-10",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C5",
+        "claim": "The pandemic accelerated digital health adoption, including AI tools.",
+        "speaker": "Alex Moore",
+        "timestamp": "00:03:30",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.8,
+        "rationale": "McKinsey (2021) found telehealth use stabilised at about 38 times pre-pandemic levels, and investment in digital-health tools, including AI, rose sharply over the same period.",
+        "evidence": [
+          {
+            "source_id": "kb-pandemic-telehealth",
+            "title": "COVID-19 accelerated telehealth and digital-health adoption",
+            "url": "https://www.mckinsey.com/industries/healthcare/our-insights/telehealth-a-quarter-trillion-dollar-post-covid-19-reality",
+            "as_of": "2021-07",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C6",
+        "claim": "AI copilots will suggest treatment plans, but a human will always make the final call.",
+        "speaker": "Dr. Priya Patel",
+        "timestamp": "00:04:15",
+        "claim_type": "prediction",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "This is a forward-looking prediction (\"always\"). Today, decision-support and copilot tools do exist with clinicians keeping final responsibility, but the future cannot be verified.",
+        "evidence": [
+          {
+            "source_id": "kb-ambient-ai-scribes",
+            "title": "Clinical AI copilots: ambient scribes and decision support",
+            "url": "https://www.nuance.com/healthcare/dragon-ai-clinical-solutions.html",
+            "as_of": "2025-03",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C7",
+        "claim": "AI will work best when systems are interoperable and talk to each other securely.",
+        "speaker": "Alex Moore",
+        "timestamp": "00:04:40",
+        "claim_type": "prediction",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "This is a prediction or opinion. Context supports it: poor interoperability is widely cited as a barrier to deploying AI, and the Cures Act requires FHIR APIs. But the claim itself cannot be tested.",
+        "evidence": [
+          {
+            "source_id": "kb-interoperability-cures-act",
+            "title": "Interoperability rules: 21st Century Cures Act and FHIR APIs",
+            "url": "https://www.healthit.gov/topic/oncs-cures-act-final-rule",
+            "as_of": "2023-01",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      }
+    ],
+    "reviewer_notes": [
+      "C2 (Alex Moore, 00:01:15): the claim that 'full autonomy isn't happening anytime soon' oversimplifies. The FDA authorised the autonomous IDx-DR device in 2018. Consider an editorial clarification in the show notes.",
+      "C3: triage chatbots exist, but published evaluations show their accuracy varies widely (about 57% appropriate triage in a 2015 BMJ study). Avoid implying they are reliable.",
+      "C5's evidence is a 2021 McKinsey estimate, so it is dated; the direction is well established.",
+      "Web search results came back as raw strings and could not be parsed, so most evidence comes from the curated reference KB. The C2 web source (arvojournals) is other_web.",
+      "The panel's speaker roles are clear; no likely transcription errors. Patel's credentials and specialty are not stated in the episode."
+    ],
+    "ingest": {
+      "lines_parsed": 16,
+      "lines_kept": 16,
+      "lines_cleaned": 0,
+      "lines_flagged": 0,
+      "lines_dropped": [],
+      "speakers_mapped": {
+        "David": "David Chen",
+        "Dr. Priya": "Dr. Priya Patel",
+        "Alex": "Alex Moore"
+      },
+      "flags": []
+    },
+    "metrics": {
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "model_turns": 5,
+      "tool_calls": 14,
+      "rejected_tool_calls": 0,
+      "searches": 2,
+      "web_searches": 3,
+      "blocked_results_dropped": 0,
+      "input_tokens": 14,
+      "output_tokens": 5779,
+      "cache_read_tokens": 71963,
+      "cache_write_tokens": 20035,
+      "estimated_cost_usd": 0.2446,
+      "duration_seconds": 61.6
+    },
+    "generated_at": "2026-11-06T01:15:07+00:00"
+  },
+  {
+    "episode_id": "ep003",
+    "title": "Bootstrapping vs Fundraising — Which Path Wins?",
+    "host": "Lena Torres",
+    "guests": [
+      "Samir Gupta",
+      "Emily Rogers"
+    ],
+    "source_file": "ep003_bootstrapping.json",
+    "client_id": "default",
+    "source_policy_version": "b46f0e416d7b",
+    "status": "complete",
+    "error": null,
+    "plan": [
+      {
+        "step": 1,
+        "action": "Draft and submit summary",
+        "tool": "submit_summary",
+        "rationale": "Core deliverable"
+      },
+      {
+        "step": 2,
+        "action": "Submit key notes with verbatim quotes",
+        "tool": "submit_key_notes",
+        "rationale": "Show notes"
+      },
+      {
+        "step": 3,
+        "action": "Register claims (mostly anecdotes and general business claims)",
+        "tool": "register_claims",
+        "rationale": "Fact-check"
+      },
+      {
+        "step": 4,
+        "action": "Search KB and web for evidence",
+        "tool": "search_knowledge_base / web_search",
+        "rationale": "Evidence"
+      },
+      {
+        "step": 5,
+        "action": "Record verdicts and finish",
+        "tool": "record_verdict / finish",
+        "rationale": "Complete report"
+      }
+    ],
+    "summary": {
+      "text": "In this episode of Founder Debates, host Lena Torres moderates a discussion on whether founders are better served by bootstrapping or by raising venture capital. Her two guests take opposing sides: Samir Gupta, who has bootstrapped companies from scratch, and Emily Rogers, who has raised multiple funding rounds.\n\nSamir argues that bootstrapping is still relevant because it forces discipline. Founders have to focus on revenue and profitability early, and they are not distracted by chasing the metrics venture investors care about. Emily responds that in time-sensitive markets, venture money can help a company capture the opportunity before competitors do.\n\nAsked for concrete examples, Samir describes building a SaaS business with no outside capital that reached break-even in 18 months while he kept total control. Emily cites a fintech startup she advised that raised a seed round to scale quickly and reached market leadership within two years.\n\nThe guests then outline a decision framework. Samir recommends bootstrapping when a market is niche, defensible and generates revenue early. Emily recommends raising when the space is fast-moving and competitive, or when the company needs talent or product scale quickly. On trade-offs, Samir says bootstrapping means slower growth but full control and less risk from investors. Emily says venture capital brings faster growth and resources, but at the cost of diluted control and possible pressure for a quick exit.\n\nLena closes by concluding that the best path depends heavily on the type of market and on the founder's priorities. Neither model is presented as universally superior. The episode makes no statistical or regulatory claims; its evidence consists of the guests' personal anecdotes.",
+      "word_count": 268,
+      "core_themes": [
+        "Bootstrapping vs venture capital",
+        "Control versus growth speed",
+        "Matching funding strategy to market type"
+      ],
+      "key_discussions": [
+        "Bootstrapping as a source of discipline and early focus on revenue",
+        "VC for capturing time-sensitive, competitive markets",
+        "Anecdotes: a bootstrapped SaaS that broke even in 18 months vs a seed-funded fintech that reached market leadership in two years",
+        "Trade-offs: dilution and exit pressure vs slower growth"
+      ],
+      "outcomes": [
+        "Bootstrap if the market is niche, defensible and generates revenue early",
+        "Raise if the space is fast-moving, competitive and needs scale or talent quickly",
+        "The best path depends on market type and founder priorities"
+      ]
+    },
+    "key_notes": {
+      "takeaways": [
+        "Assess your market first: niche, defensible markets that generate revenue early suit bootstrapping.",
+        "In fast-moving, competitive spaces, outside capital can help you capture the market before rivals do.",
+        "Bootstrapping keeps you focused on revenue and profitability rather than VC metrics.",
+        "Raising VC means diluting control and possibly facing pressure for a quick exit.",
+        "Choose a funding path based on your own priorities: control and lower investor risk versus speed and resources."
+      ],
+      "quotes": [
+        {
+          "timestamp": "00:01:05",
+          "speaker": "Samir Gupta",
+          "quote": "Bootstrapping forces discipline. You focus on revenue and profitability early.",
+          "why_notable": "Core argument for bootstrapping",
+          "raw_line": "Bootstrapping forces discipline. You focus on revenue and profitability early. No distractions from chasing VC metrics."
+        },
+        {
+          "timestamp": "00:01:30",
+          "speaker": "Emily Rogers",
+          "quote": "if your market is time-sensitive, VC money helps capture it before competitors.",
+          "why_notable": "Core argument for VC",
+          "raw_line": "True, but if your market is time-sensitive, VC money helps capture it before competitors."
+        },
+        {
+          "timestamp": "00:04:40",
+          "speaker": "Emily Rogers",
+          "quote": "VC: faster growth, resources, but you dilute control and may face pressure for quick exits.",
+          "why_notable": "Candid summary of VC trade-offs",
+          "raw_line": "VC: faster growth, resources, but you dilute control and may face pressure for quick exits."
+        },
+        {
+          "timestamp": "00:05:10",
+          "speaker": "Lena Torres",
+          "quote": "It seems the best path depends heavily on market type and founder priorities.",
+          "why_notable": "Episode conclusion",
+          "raw_line": "Thanks both. It seems the best path depends heavily on market type and founder priorities."
+        }
+      ],
+      "topics": [
+        "bootstrapping",
+        "venture-capital",
+        "startup-funding",
+        "saas",
+        "fintech",
+        "founder-strategy"
+      ]
+    },
+    "fact_checks": [
+      {
+        "claim_id": "C1",
+        "claim": "Samir built a SaaS with no outside capital that reached break-even in 18 months.",
+        "speaker": "Samir Gupta",
+        "timestamp": "00:02:10",
+        "claim_type": "anecdote",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "Personal anecdote; the company is not named and no source addresses it.",
+        "evidence": [],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C2",
+        "claim": "A fintech startup Emily advised raised a seed round and secured market leadership within two years.",
+        "speaker": "Emily Rogers",
+        "timestamp": "00:02:35",
+        "claim_type": "anecdote",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "Anecdote about an unnamed fintech startup; \"market leadership\" is not defined or testable.",
+        "evidence": [],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C3",
+        "claim": "Raising VC dilutes founder control and can bring pressure for quick exits.",
+        "speaker": "Emily Rogers",
+        "timestamp": "00:04:40",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.85,
+        "rationale": "Reference KB: seed rounds typically dilute founders by about 20%, and investors gain board seats or protective provisions that reduce founder control. A VC fund's ten-year life creates pressure on portfolio companies to reach a liquidity event.",
+        "evidence": [
+          {
+            "source_id": "kb-seed-dilution",
+            "title": "Typical founder dilution in a seed round",
+            "url": "https://carta.com/data/",
+            "as_of": "2024-06",
+            "tier": "reference"
+          },
+          {
+            "source_id": "kb-vc-fund-horizon",
+            "title": "VC fund lifecycles create pressure for exits",
+            "url": "https://nvca.org/",
+            "as_of": "2024-01",
+            "tier": "reference"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      }
+    ],
+    "reviewer_notes": [
+      "The episode's evidence is mostly personal anecdote: Samir's SaaS break-even in 18 months (C1) and Emily's advised fintech (C2) are both unnamed and unverifiable. Consider asking the guests for names before publishing any implied endorsement.",
+      "C3 (VC dilution and exit pressure) was verified against reference KB entries only; the web search call failed on a parsing error and no web sources were retrieved.",
+      "Speaker labels look consistent; no obvious transcription errors.",
+      "The 'market leadership within two years' claim is vague; if it is promoted in show notes, it should carry the caveat that it is the guest's characterisation."
+    ],
+    "ingest": {
+      "lines_parsed": 16,
+      "lines_kept": 16,
+      "lines_cleaned": 1,
+      "lines_flagged": 0,
+      "lines_dropped": [],
+      "speakers_mapped": {
+        "Lena": "Lena Torres",
+        "Samir": "Samir Gupta",
+        "Emily": "Emily Rogers"
+      },
+      "flags": []
+    },
+    "metrics": {
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "model_turns": 4,
+      "tool_calls": 9,
+      "rejected_tool_calls": 0,
+      "searches": 1,
+      "web_searches": 1,
+      "blocked_results_dropped": 0,
+      "input_tokens": 10,
+      "output_tokens": 3244,
+      "cache_read_tokens": 36283,
+      "cache_write_tokens": 14875,
+      "estimated_cost_usd": 0.1538,
+      "duration_seconds": 35.8
+    },
+    "generated_at": "2026-11-06T01:14:42+00:00"
+  },
+  {
+    "episode_id": "ep000",
+    "title": "Space Weekly - Mars Update",
+    "host": "Host",
+    "guests": [
+      "Guest"
+    ],
+    "source_file": "ep000_mars_sample.txt",
+    "client_id": "default",
+    "source_policy_version": "b46f0e416d7b",
+    "status": "complete",
+    "error": null,
+    "plan": [
+      {
+        "step": 1,
+        "action": "Draft summary and key notes from the short transcript",
+        "tool": "submit_summary / submit_key_notes",
+        "rationale": "Core deliverables"
+      },
+      {
+        "step": 2,
+        "action": "Register claims: NASA Mars mission announcement, early-2026 sample return launch, Perseverance sample collection",
+        "tool": "register_claims",
+        "rationale": "Fact-check inputs"
+      },
+      {
+        "step": 3,
+        "action": "Search KB then web (prefer nasa.gov/esa.int) for Mars Sample Return status and Perseverance samples",
+        "tool": "search_knowledge_base / web_search",
+        "rationale": "Evidence"
+      },
+      {
+        "step": 4,
+        "action": "Record verdicts and finish with reviewer notes",
+        "tool": "record_verdict / finish",
+        "rationale": "Complete episode"
+      }
+    ],
+    "summary": {
+      "text": "This excerpt of Space Weekly's \"Mars Update\" episode is a short exchange between the Host and the Guest about NASA's plans to bring rock and soil samples back from Mars. The transcript has only four lines, running from about the two-minute mark to just past three minutes. That limits how much of the discussion can be summarized, so this overview sticks to what is actually said.\n\nThe Host opens by saying NASA recently announced something about a new Mars mission. The Guest identifies it as a sample-return effort, saying the mission is launching in early 2026 and is intended to bring Martian samples back to Earth. The Host calls the news exciting. The Guest then adds that NASA's Perseverance rover has already collected the samples the mission would bring home. This links the planned return flight to work already done on the Martian surface.\n\nThe core themes are Mars exploration, sample return as a scientific goal, and Perseverance's role in gathering material for later study on Earth. The tone is upbeat. Neither speaker raises costs, schedule risk, or the politics of funding. The main outcome is the speakers' shared enthusiasm and the Guest's view that the hardest groundwork, collecting the samples, is already finished.\n\nListeners should know that the timeline given in the episode does not match the public record as of November 2026. NASA's Mars Sample Return program did not launch in early 2026. Its schedule had already slipped into the 2030s, and US budget decisions around January 2026 effectively cancelled it. The Guest's point about Perseverance holds up: NASA reports that the rover has filled dozens of sample tubes. Whether those samples ever reach Earth now depends on future missions, possibly from other countries or commercial partners.",
+      "word_count": 289,
+      "core_themes": [
+        "NASA Mars exploration",
+        "Mars sample return",
+        "Perseverance rover sample collection"
+      ],
+      "key_discussions": [
+        "Host raises a recent NASA announcement about a new Mars mission",
+        "Guest says the mission launches in early 2026 to return samples",
+        "Guest notes Perseverance has already collected the samples"
+      ],
+      "outcomes": [
+        "Both speakers are enthusiastic about returning Mars samples",
+        "Guest's early-2026 launch timeline is out of date; Mars Sample Return was effectively cancelled",
+        "Perseverance's sample collection is confirmed by NASA"
+      ]
+    },
+    "key_notes": {
+      "takeaways": [
+        "NASA's Perseverance rover has collected dozens of Martian samples in sealed tubes that are waiting to be retrieved.",
+        "The episode's early-2026 launch date for Mars sample return is out of date: no such launch happened.",
+        "US budget decisions around January 2026 effectively cancelled NASA's Mars Sample Return program.",
+        "Check mission dates against nasa.gov, because space mission schedules often slip or get cancelled.",
+        "Getting Perseverance's samples to Earth now depends on future missions, possibly from other countries or commercial partners."
+      ],
+      "quotes": [
+        {
+          "timestamp": "00:02:18",
+          "speaker": "Guest",
+          "quote": "Yes, it's launching in early 2026 - they're planning to bring back samples.",
+          "why_notable": "The episode's central claim, now out of date",
+          "raw_line": "Yes, um, it's launching in early 2026 — they're planning to bring back samples."
+        },
+        {
+          "timestamp": "00:03:05",
+          "speaker": "Guest",
+          "quote": "And the Perseverance rover has already collected the samples it would bring home.",
+          "why_notable": "Links the rover's completed work to the planned return mission",
+          "raw_line": "And the Perseverance rover has already, uh, collected the the samples it would bring home."
+        }
+      ],
+      "topics": [
+        "mars",
+        "nasa",
+        "mars-sample-return",
+        "perseverance-rover",
+        "space-exploration"
+      ]
+    },
+    "fact_checks": [
+      {
+        "claim_id": "C1",
+        "claim": "NASA recently announced a new Mars mission.",
+        "speaker": "Host",
+        "timestamp": "00:02:14",
+        "claim_type": "factual",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "Too vague to pin to a single announcement. The closest match is NASA's January 2025 statement that it would look at two landing options for Mars Sample Return. After that, the FY2026 budget request proposed ending the program, and later coverage reports it was effectively cancelled in January 2026. As of November 2026, no retrieved source shows a recent NASA announcement of a new sample-return mission.",
+        "evidence": [
+          {
+            "source_id": "kb-nasa-mars-sample-return",
+            "title": "NASA Mars Sample Return timeline under review",
+            "url": "https://www.nasa.gov/news-release/nasa-to-explore-two-landing-options-for-returning-samples-from-mars/",
+            "as_of": "2025-06",
+            "tier": "reference"
+          },
+          {
+            "source_id": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+            "title": "An abandoned rock sample could prove life once existed on Mars. But will it ever reach Earth?",
+            "url": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+            "as_of": "24 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C2",
+        "claim": "The NASA Mars mission (sample return) is launching in early 2026 and plans to bring back samples from Mars.",
+        "speaker": "Guest",
+        "timestamp": "00:02:18",
+        "claim_type": "factual",
+        "verdict": "possibly_outdated_or_inaccurate",
+        "verdict_label": "⚠️ Possibly outdated/inaccurate",
+        "confidence": 0.9,
+        "rationale": "The reference KB, citing NASA's January 2025 release, says no Mars sample-return launch was scheduled for early 2026 and that samples would not come back before 2035-2039. The FY2026 budget request proposed ending the program. CNN (Oct 2026) and Scientific American say the January 2026 appropriations effectively cancelled Mars Sample Return. As of today, the claimed early-2026 launch did not happen and is not planned.",
+        "evidence": [
+          {
+            "source_id": "kb-nasa-mars-sample-return",
+            "title": "NASA Mars Sample Return timeline under review",
+            "url": "https://www.nasa.gov/news-release/nasa-to-explore-two-landing-options-for-returning-samples-from-mars/",
+            "as_of": "2025-06",
+            "tier": "reference"
+          },
+          {
+            "source_id": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+            "title": "An abandoned rock sample could prove life once existed on Mars. But will it ever reach Earth?",
+            "url": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+            "as_of": "24 days ago",
+            "tier": "other_web"
+          },
+          {
+            "source_id": "https://www.scientificamerican.com/article/nasas-mars-sample-return-mission-in-jeopardy-as-u-s-considers-abandoning/",
+            "title": "NASA’s Mars sample return mission in jeopardy as U.S. considers abandoning retrieval",
+            "url": "https://www.scientificamerican.com/article/nasas-mars-sample-return-mission-in-jeopardy-as-u-s-considers-abandoning/",
+            "as_of": "163 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      },
+      {
+        "claim_id": "C3",
+        "claim": "The Perseverance rover has already collected the samples that the sample return mission would bring home.",
+        "speaker": "Guest",
+        "timestamp": "00:03:05",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.85,
+        "rationale": "NASA/JPL photojournal pages show 33 sample tubes used by Perseverance as of July 2025, and NASA reported the rover's first rock core in 2021. So the rover has collected samples meant for return. Caveat: no return mission is currently funded, so 'would bring home' depends on a mission that may not happen.",
+        "evidence": [
+          {
+            "source_id": "https://science.nasa.gov/photojournal/the-33-sample-tubes-collected-by-perseverance/",
+            "title": "The 33 Sample Tubes Collected by Perseverance - NASA Science",
+            "url": "https://science.nasa.gov/photojournal/the-33-sample-tubes-collected-by-perseverance/",
+            "as_of": "345 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "https://www.jpl.nasa.gov/images/pia26643-the-33-sample-tubes-collected-by-perseverance/",
+            "title": "The 33 Sample Tubes Collected by Perseverance",
+            "url": "https://www.jpl.nasa.gov/images/pia26643-the-33-sample-tubes-collected-by-perseverance/",
+            "as_of": "470 days ago",
+            "tier": "trusted_web"
+          },
+          {
+            "source_id": "https://www.nasa.gov/news-release/nasas-perseverance-rover-collects-first-mars-rock-sample/",
+            "title": "NASA’s Perseverance Rover Collects First Mars Rock Sample - NASA",
+            "url": "https://www.nasa.gov/news-release/nasas-perseverance-rover-collects-first-mars-rock-sample/",
+            "as_of": "1198 days ago",
+            "tier": "trusted_web"
+          }
+        ],
+        "needs_human_review": false,
+        "review_reason": null
+      }
+    ],
+    "reviewer_notes": [
+      "The transcript excerpt is only 4 lines (00:02:14-00:03:05), so the summary had to be padded with context. An editor may want the full transcript.",
+      "C2 (early-2026 sample-return launch) is out of date as of 2026-11-05. Mars Sample Return never had an early-2026 launch, and US FY2026 appropriations effectively cancelled it. Consider an editor's note or correction in the show notes.",
+      "C1 is vague ('recently announced something'). It probably refers to NASA's January 2025 announcement of two landing options, but there is no specific new mission announcement to verify.",
+      "Some cancellation evidence comes from other_web outlets (CNN, Scientific American). It is backed by the reference KB, which cites a NASA release. A space-policy reviewer could confirm the final appropriations status on nasa.gov.",
+      "The episode's recording date is unknown. If it was recorded before 2025, the early-2026 date may have reflected older plans."
+    ],
+    "ingest": {
+      "lines_parsed": 4,
+      "lines_kept": 4,
+      "lines_cleaned": 3,
+      "lines_flagged": 0,
+      "lines_dropped": [],
+      "speakers_mapped": {
+        "Host": "Host",
+        "Guest": "Guest"
+      },
+      "flags": []
+    },
+    "metrics": {
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "model_turns": 4,
+      "tool_calls": 9,
+      "rejected_tool_calls": 0,
+      "searches": 1,
+      "web_searches": 4,
+      "blocked_results_dropped": 0,
+      "input_tokens": 14,
+      "output_tokens": 4636,
+      "cache_read_tokens": 62253,
+      "cache_write_tokens": 17571,
+      "estimated_cost_usd": 0.2055,
+      "duration_seconds": 65.1
+    },
+    "generated_at": "2026-11-06T01:15:47+00:00"
+  },
+  {
+    "episode_id": "ep900",
+    "title": "Retail Media Roundup",
+    "host": "Jordan Lee",
+    "guests": [
+      "Dr. Maya Okafor",
+      "Tom Brandt"
+    ],
+    "source_file": "ep900_messy.txt",
+    "client_id": "default",
+    "source_policy_version": "b46f0e416d7b",
+    "status": "complete",
+    "error": null,
+    "plan": [
+      {
+        "step": 1,
+        "action": "Draft summary and key notes from the short transcript",
+        "tool": "submit_summary / submit_key_notes",
+        "rationale": "Core deliverables"
+      },
+      {
+        "step": 2,
+        "action": "Register claims: Amazon ads >$50B, FTC 2024 fake reviews rule, async tool anecdote",
+        "tool": "register_claims",
+        "rationale": "Fact-check inputs"
+      },
+      {
+        "step": 3,
+        "action": "Search KB and web for each claim",
+        "tool": "search_knowledge_base / web_search",
+        "rationale": "Evidence gathering, prefer trusted domains"
+      },
+      {
+        "step": 4,
+        "action": "Record verdicts and finish with reviewer notes (transcription 'async yo', timestamp ingest note, 'FTC fined' question)",
+        "tool": "record_verdict / finish",
+        "rationale": "Complete report"
+      }
+    ],
+    "summary": {
+      "text": "In this short episode of Retail Media Roundup, host Jordan Lee is joined by guests Dr. Maya Okafor and Tom Brandt for a quick look at the retail media and advertising landscape. The conversation opens with Amazon's advertising business. Dr. Okafor says Amazon's ad revenue passed $50 billion last year, and Tom Brandt agrees, saying he likes the momentum behind the business. The exchange presents Amazon as a dominant and still-growing force in retail media, though neither guest goes into what drives that growth or what it means for other advertisers.\n\nNext, Jordan Lee asks about regulation, recalling that the Federal Trade Commission had fined someone over fake reviews. Dr. Okafor corrects this framing. She explains that in 2024 the FTC finalised a rule banning fake reviews, making it a regulatory action rather than a single fine. The point matters for brands and agencies that rely on consumer reviews and testimonials in commerce and retail media campaigns.\n\nThe discussion then briefly moves to technology. Tom Brandt says his team uses an asynchronous programming tool, apparently Python's asyncio, for their data pipelines and finds it fast. This is a personal endorsement rather than a detailed technical discussion. After a brief moment of crosstalk, in which Dr. Okafor yields the floor, Jordan Lee closes the show.\n\nOverall, the episode is a fast-paced roundup rather than a deep analysis. Its main takeaways are that Amazon's ad business is very large and growing, that the FTC's fake-review rule now shapes how marketers handle reviews, and that the guests are generally upbeat about the momentum in retail media. No forecasts or detailed recommendations are offered beyond these brief opinions.",
+      "word_count": 274,
+      "core_themes": [
+        "Amazon's scale in retail media advertising",
+        "FTC regulation of fake reviews",
+        "Data pipeline tooling"
+      ],
+      "key_discussions": [
+        "Amazon's ad business size (said to have passed $50B last year)",
+        "The FTC's 2024 final rule banning fake reviews, a rule rather than a fine",
+        "Tom Brandt's team using async tooling for pipelines"
+      ],
+      "outcomes": [
+        "The guests are upbeat about Amazon's ad momentum",
+        "The host's 'fine' framing is corrected to a 2024 FTC rule",
+        "Tom Brandt endorses async tooling as fast for pipelines"
+      ]
+    },
+    "key_notes": {
+      "takeaways": [
+        "Amazon is a major force in retail media, with its ad business described as passing $50 billion a year (reported 2025 figures are higher, about $68.6B).",
+        "The FTC finalised a rule banning fake reviews and testimonials in 2024, so brands should audit how they get and display reviews.",
+        "The FTC's action on fake reviews was a rule, not a single fine, so the compliance duty applies across the industry.",
+        "Asynchronous tooling such as Python's asyncio can speed up data pipelines, according to Tom Brandt's experience.",
+        "Check the latest earnings filings before quoting retail media revenue figures, because they go out of date quickly."
+      ],
+      "quotes": [
+        {
+          "timestamp": "00:00:12",
+          "speaker": "Dr. Maya Okafor",
+          "quote": "Amazon's ad business passed $50 billion last year.",
+          "why_notable": "Headline statistic on Amazon's retail media scale",
+          "raw_line": "Thanks Jordan. So, like, Amazon's ad business, you know, passed $50 billion last year."
+        },
+        {
+          "timestamp": "00:01:20",
+          "speaker": "Dr. Maya Okafor",
+          "quote": "in 2024 the F.T.C. finalised a rule banning fake reviews.",
+          "why_notable": "Clarifies the regulatory change affecting review-based marketing",
+          "raw_line": "Yeah, in 2024 the F.T.C. finalised a rule banning fake reviews."
+        },
+        {
+          "timestamp": "00:00:31",
+          "speaker": "Tom Brandt",
+          "quote": "I like the momentum there.",
+          "why_notable": "Guest's upbeat view of Amazon's ad growth",
+          "raw_line": "I I think that's right. I like the, the momentum there."
+        }
+      ],
+      "topics": [
+        "retail-media",
+        "amazon-ads",
+        "ftc",
+        "fake-reviews",
+        "advertising-regulation",
+        "data-pipelines"
+      ]
+    },
+    "fact_checks": [
+      {
+        "claim_id": "C1",
+        "claim": "Amazon's ad business passed $50 billion last year (2025).",
+        "speaker": "Dr. Maya Okafor",
+        "timestamp": "00:00:12",
+        "claim_type": "statistic",
+        "verdict": "possibly_outdated_or_inaccurate",
+        "verdict_label": "⚠️ Possibly outdated/inaccurate",
+        "confidence": 0.55,
+        "rationale": "\"Last year\" means 2025 (today is 2026-11-05). Reports of Amazon's Q4 2025 earnings (Feb 6, 2026) give full-year 2025 advertising revenue of about $68.6B. \"Passed $50 billion\" is technically true but understates the figure by roughly $18B. The $50B mark was already crossed in 2024 (~$56B), so the claim reads as a stale number. The Amazon FY2025 ARS on sec.gov came up in the search, but the excerpt only showed total revenue ($717B), so it isn't cited for the ad figure.",
+        "evidence": [
+          {
+            "source_id": "https://www.marketingdive.com/news/amazon-annual-ad-revenue-passes-68b-boosted-by-full-funnel-strategy/811569/",
+            "title": "Amazon’s annual ad revenue passes $68B, boosted by full-funnel strategy",
+            "url": "https://www.marketingdive.com/news/amazon-annual-ad-revenue-passes-68b-boosted-by-full-funnel-strategy/811569/",
+            "as_of": "272 days ago",
+            "tier": "other_web"
+          },
+          {
+            "source_id": "https://ppc.land/amazons-69b-ad-business-gets-one-sentence-in-jassys-2025-letter/",
+            "title": "Amazon's $69B ad business gets one sentence in Jassy's 2025 letter",
+            "url": "https://ppc.land/amazons-69b-ad-business-gets-one-sentence-in-jassys-2025-letter/",
+            "as_of": "209 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": true,
+        "review_reason": "All cited sources are other_web (trade press). Confirm the $68.6B 2025 advertising figure against Amazon's 10-K/ARS on sec.gov. Also decide whether to note in the show notes that the claim understates the figure."
+      },
+      {
+        "claim_id": "C2",
+        "claim": "In 2024 the FTC finalised a rule banning fake reviews.",
+        "speaker": "Dr. Maya Okafor",
+        "timestamp": "00:01:20",
+        "claim_type": "factual",
+        "verdict": "verified",
+        "verdict_label": "✅ Verified true",
+        "confidence": 0.6,
+        "rationale": "On August 14, 2024 the FTC announced a final rule banning fake reviews and testimonials (16 CFR Part 465), which took effect October 21, 2024. The FTC's own press release and several law-firm analyses confirm this. Note that the host's question implied a fine. The guest correctly described a rule, not a fine. FTC warning letters under the rule followed in December 2025.",
+        "evidence": [
+          {
+            "source_id": "https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials",
+            "title": "Federal Trade Commission Announces Final Rule Banning Fake Reviews and Testimonials",
+            "url": "https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials",
+            "as_of": "807 days ago",
+            "tier": "other_web"
+          },
+          {
+            "source_id": "https://www.mcdermottlaw.com/insights/ftc-announces-rule-to-crack-down-on-fake-reviews/",
+            "title": "FTC Announces Rule to Crack Down on Fake Reviews",
+            "url": "https://www.mcdermottlaw.com/insights/ftc-announces-rule-to-crack-down-on-fake-reviews/",
+            "as_of": "176 days ago",
+            "tier": "other_web"
+          },
+          {
+            "source_id": "https://www.fourscorelaw.com/resources/ftc-bans-fake-reviews-and-testimonials",
+            "title": "FTC Fake Reviews Rule 2024: Compliance Guide — Fourscore Business Law",
+            "url": "https://www.fourscorelaw.com/resources/ftc-bans-fake-reviews-and-testimonials",
+            "as_of": "227 days ago",
+            "tier": "other_web"
+          }
+        ],
+        "needs_human_review": true,
+        "review_reason": "Source policy: ftc.gov is not on the client's trusted-domain list, so every cited source counts as other_web. Confidence is capped at 0.6 and a human sign-off is needed, even though ftc.gov is the primary source."
+      },
+      {
+        "claim_id": "C3",
+        "claim": "Tom Brandt's team uses 'async yo' (possibly asyncio) for their pipelines and it is fast.",
+        "speaker": "Tom Brandt",
+        "timestamp": "00:01:45",
+        "claim_type": "anecdote",
+        "verdict": "unverifiable",
+        "verdict_label": "❓ Unverifiable",
+        "confidence": 0.5,
+        "rationale": "This is a personal anecdote about Tom's own tooling and can't be checked against outside sources. \"async yo\" is very likely a mistranscription of Python's asyncio library.",
+        "evidence": [],
+        "needs_human_review": false,
+        "review_reason": null
+      }
+    ],
+    "reviewer_notes": [
+      "Likely transcription error at 00:01:45: 'async yo' is almost certainly 'asyncio' (Python library). The summary and takeaways treat it that way, so please confirm.",
+      "The 00:02:30 timestamp on the closing line was made up at ingest (copied from the previous line), so the real time is unknown.",
+      "At 00:01:05 the host says the FTC 'fined somebody'. The guest corrects this to a 2024 rule (announced Aug 14, 2024, effective Oct 21, 2024). No specific fine is identified.",
+      "C1: The Amazon ad claim ('passed $50B last year') understates the reported 2025 figure of about $68.6B and is marked possibly outdated. Verify against Amazon's FY2025 10-K/ARS on sec.gov, since the evidence cited is trade press (other_web).",
+      "C2: Verified using the FTC's own press release. ftc.gov is not on the client's trusted-domain list, so source policy capped confidence at 0.6 and flagged it for human review. Consider adding ftc.gov as a trusted regulation domain.",
+      "The web search tool-use limit was hit before trusted news sources (reuters/apnews) could be searched for C1 and C2.",
+      "At 00:02:10 Dr. Okafor says 'Sorry - go ahead' with no visible interruption, so some content may be missing from the transcript."
+    ],
+    "ingest": {
+      "lines_parsed": 10,
+      "lines_kept": 8,
+      "lines_cleaned": 5,
+      "lines_flagged": 1,
+      "lines_dropped": [
+        {
+          "timestamp": "00:02:10",
+          "speaker": "Jordan",
+          "raw_text": "Hmm. [crosstalk] Okay."
+        },
+        {
+          "timestamp": "00:02:30",
+          "speaker": "Tom",
+          "raw_text": "Um. Uh. Yeah."
+        }
+      ],
+      "speakers_mapped": {
+        "Jordan": "Jordan Lee",
+        "Maya": "Dr. Maya Okafor",
+        "Tom": "Tom Brandt",
+        "JORDAN": "Jordan Lee",
+        "Dr. Okafor": "Dr. Maya Okafor"
+      },
+      "flags": [
+        {
+          "timestamp": "00:02:30",
+          "speaker": "Jordan Lee",
+          "flags": [
+            "no timestamp in file; using 00:02:30 from the previous line"
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "model_turns": 3,
+      "tool_calls": 10,
+      "rejected_tool_calls": 0,
+      "searches": 2,
+      "web_searches": 8,
+      "blocked_results_dropped": 0,
+      "input_tokens": 16,
+      "output_tokens": 5310,
+      "cache_read_tokens": 82853,
+      "cache_write_tokens": 21237,
+      "estimated_cost_usd": 0.2456,
+      "duration_seconds": 66.8
+    },
+    "generated_at": "2026-11-06T01:16:14+00:00"
+  }
+]

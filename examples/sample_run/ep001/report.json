@@ -1,0 +1,329 @@
+{
+  "episode_id": "ep001",
+  "title": "The Future of Remote Work",
+  "host": "Sarah Johnson",
+  "guests": [
+    "Mark Rivera"
+  ],
+  "source_file": "ep001_remote_work.json",
+  "client_id": "default",
+  "source_policy_version": "b46f0e416d7b",
+  "status": "complete",
+  "error": null,
+  "plan": [
+    {
+      "step": 1,
+      "action": "Draft and submit summary",
+      "tool": "submit_summary",
+      "rationale": "Core deliverable"
+    },
+    {
+      "step": 2,
+      "action": "Submit takeaways, verbatim quotes, tags",
+      "tool": "submit_key_notes",
+      "rationale": "Show notes"
+    },
+    {
+      "step": 3,
+      "action": "Register check-worthy claims (GitLab/Automattic/Doist handbooks, predictions)",
+      "tool": "register_claims",
+      "rationale": "Fact-check set"
+    },
+    {
+      "step": 4,
+      "action": "Search KB and web for evidence",
+      "tool": "search_knowledge_base, web_search",
+      "rationale": "Evidence gathering, prefer trusted domains"
+    },
+    {
+      "step": 5,
+      "action": "Record verdicts",
+      "tool": "record_verdict",
+      "rationale": "One per claim"
+    },
+    {
+      "step": 6,
+      "action": "Finish with reviewer notes",
+      "tool": "finish",
+      "rationale": "Close out"
+    }
+  ],
+  "summary": {
+    "text": "In this episode of Work Reimagined, host Sarah Johnson talks with guest Mark Rivera about what remote work looks like in 2025 and beyond. Rivera argues that remote work is about more than working from anywhere. He sees it as an operating model built on async-first communication, thorough documentation, autonomy, structured processes and trust.\n\nHe points to GitLab, Automattic and Doist as companies that have written handbooks covering nearly everything, so employees can find answers without constant guidance. Asked whether this works for smaller teams, Rivera says even small groups benefit from clear documentation, because it cuts down on context-switching and keeps knowledge from being siloed.\n\nOn tools, Rivera says Zoom and Slack help but are not the answer. Culture is what matters, and relying on Slack for everything can lead to burnout. On productivity, he recommends judging outcomes rather than hours: set goals, track progress on deliverables and trust the team. In his view, transparency matters more than frequent check-ins.\n\nJohnson raises loneliness as a common downside of remote work. Rivera suggests virtual coffee chats, occasional in-person retreats and team rituals, saying that remote work need not be isolating but does take intention.\n\nLooking ahead, Rivera predicts that remote-first companies will dominate hiring, that local offices may become optional hubs, and that async culture will become standard practice. His closing advice for teams moving to remote work is to focus on documentation, set clear goals, invest in culture and trust the team, which he calls the foundation for success.",
+    "word_count": 250,
+    "core_themes": [
+      "Async-first remote culture",
+      "Documentation and handbooks",
+      "Culture over tools",
+      "Outcome-based productivity",
+      "Combating isolation",
+      "Future of work predictions"
+    ],
+    "key_discussions": [
+      "Remote work as process and trust rather than location",
+      "GitLab, Automattic and Doist handbook examples",
+      "Whether documentation scales to small teams",
+      "Limits of Zoom and Slack and burnout risk",
+      "Measuring productivity without micromanagement",
+      "Addressing loneliness with rituals and retreats"
+    ],
+    "outcomes": [
+      "Rivera predicts remote-first firms will dominate talent acquisition",
+      "Offices may become optional hubs",
+      "Async culture expected to become standard",
+      "Advice: document, set clear goals, invest in culture, trust the team"
+    ]
+  },
+  "key_notes": {
+    "takeaways": [
+      "Treat remote work as an operating model (async-first, documented, autonomous), not just a location choice.",
+      "Write a handbook so employees can self-serve answers; even small teams benefit by reducing context-switching and knowledge silos.",
+      "Don't rely on Slack for everything—tools support culture but can drive burnout if overused.",
+      "Measure outcomes over hours: set goals, track deliverables, and prioritize transparency over check-ins.",
+      "Fight isolation intentionally with virtual coffee chats, team rituals and occasional in-person retreats."
+    ],
+    "quotes": [
+      {
+        "timestamp": "00:00:45",
+        "speaker": "Mark Rivera",
+        "quote": "Being remote doesn't just mean a location; it means structured processes and trust.",
+        "why_notable": "Reframes remote work as a structural and cultural model.",
+        "raw_line": "Not quite. It’s more about async-first culture, documentation, and autonomy. Being remote doesn’t just mean a location; it means structured processes and trust."
+      },
+      {
+        "timestamp": "00:02:45",
+        "speaker": "Mark Rivera",
+        "quote": "They help, but tools aren't the solution. Culture is.",
+        "why_notable": "Central thesis on culture over tooling.",
+        "raw_line": "They help, but tools aren’t the solution. Culture is. Slack is great, but if you rely on it for everything, people will burn out."
+      },
+      {
+        "timestamp": "00:04:10",
+        "speaker": "Mark Rivera",
+        "quote": "Remote doesn't mean isolated; it just needs intention.",
+        "why_notable": "Concise answer to the loneliness concern.",
+        "raw_line": "Regular virtual coffee chats, occasional in-person retreats, and team rituals help. Remote doesn’t mean isolated; it just needs intention."
+      },
+      {
+        "timestamp": "00:05:00",
+        "speaker": "Mark Rivera",
+        "quote": "Remote-first companies will dominate talent acquisition.",
+        "why_notable": "Key forward-looking prediction.",
+        "raw_line": "Remote-first companies will dominate talent acquisition. Local offices might become optional hubs, and async culture will become standard practice."
+      }
+    ],
+    "topics": [
+      "remote-work",
+      "async-communication",
+      "documentation",
+      "company-culture",
+      "productivity",
+      "future-of-work"
+    ]
+  },
+  "fact_checks": [
+    {
+      "claim_id": "C1",
+      "claim": "GitLab, Automattic, and Doist have written handbooks for everything so employees can work without constant guidance.",
+      "speaker": "Mark Rivera",
+      "timestamp": "00:01:20",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.75,
+      "rationale": "GitLab publishes a public, thousands-of-pages handbook and describes itself as \"handbook-first\", so employees can find answers on their own without waiting for someone. Automattic (internal P2 blogs) and Doist (async-first) both rely heavily on written, asynchronous documentation. \"Handbooks for everything\" is rhetorical shorthand. It fits GitLab most precisely; for Automattic and Doist it describes a documentation-heavy culture rather than a single formal handbook.",
+      "evidence": [
+        {
+          "source_id": "kb-gitlab-all-remote",
+          "title": "GitLab operates as an all-remote company with a public handbook",
+          "url": "https://handbook.gitlab.com/",
+          "as_of": "2024-06",
+          "tier": "reference"
+        },
+        {
+          "source_id": "kb-automattic-distributed",
+          "title": "Automattic has been fully distributed since its founding",
+          "url": "https://automattic.com/about/",
+          "as_of": "2024-01",
+          "tier": "reference"
+        },
+        {
+          "source_id": "kb-doist-async",
+          "title": "Doist is a remote-first, async-first company",
+          "url": "https://doist.com/",
+          "as_of": "2023-09",
+          "tier": "reference"
+        },
+        {
+          "source_id": "https://handbook.gitlab.com/handbook/company/culture/all-remote/guide/",
+          "title": "GitLab's Guide to All-Remote",
+          "url": "https://handbook.gitlab.com/handbook/company/culture/all-remote/guide/",
+          "as_of": "430 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C2",
+      "claim": "Relying on Slack for everything leads to burnout.",
+      "speaker": "Mark Rivera",
+      "timestamp": "00:02:45",
+      "claim_type": "factual",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "Trade and press coverage links constant instant-messaging notifications to stress and burnout. However, no trusted or peer-reviewed source retrieved shows that relying on Slack for everything causes burnout. The causal claim is broad and partly opinion.",
+      "evidence": [
+        {
+          "source_id": "https://digiday.com/media/the-pressure-cooker-is-primed-to-explode-how-instant-messaging-tools-are-contributing-to-burnout/",
+          "title": "'The pressure cooker is primed to explode': How instant messaging tools are contributing to burnout",
+          "url": "https://digiday.com/media/the-pressure-cooker-is-primed-to-explode-how-instant-messaging-tools-are-contributing-to-burnout/",
+          "as_of": "1813 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": true,
+      "review_reason": "Only other_web evidence is available; the causal burnout claim lacks trusted-source support."
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Loneliness/lack of connection is often cited as a remote work downside.",
+      "speaker": "Sarah Johnson",
+      "timestamp": "00:03:55",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.9,
+      "rationale": "In Gallup's State of the Global Workplace 2024, fully remote employees reported loneliness at 25%, compared with 16% for fully on-site workers. Buffer's State of Remote Work surveys repeatedly list loneliness among the top struggles of remote workers.",
+      "evidence": [
+        {
+          "source_id": "https://www.gallup.com/workplace/645566/employees-worldwide-feel-lonely.aspx",
+          "title": "1 in 5 Employees Worldwide Feel Lonely",
+          "url": "https://www.gallup.com/workplace/645566/employees-worldwide-feel-lonely.aspx",
+          "as_of": "137 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "https://www.gallup.com/workplace/268076/manage-loneliness-isolation-remote-workers.aspx",
+          "title": "How to Manage the Loneliness and Isolation of Remote Workers",
+          "url": "https://www.gallup.com/workplace/268076/manage-loneliness-isolation-remote-workers.aspx",
+          "as_of": "1204 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "kb-remote-loneliness",
+          "title": "Loneliness is a commonly reported remote-work struggle",
+          "url": "https://buffer.com/state-of-remote-work",
+          "as_of": "2023-02",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C4",
+      "claim": "Remote-first companies will dominate talent acquisition.",
+      "speaker": "Mark Rivera",
+      "timestamp": "00:05:00",
+      "claim_type": "prediction",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "This is a forward-looking prediction. For context, Gallup data show hybrid is the dominant model (about 51-54% of remote-capable US employees) and only about 26% are fully remote. Remote-first companies remain a minority of employers, though remote and hybrid roles draw a disproportionate share of job applications. The prediction cannot be tested yet, and current data do not show remote-first firms dominating.",
+      "evidence": [
+        {
+          "source_id": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+          "title": "Global Indicator: Hybrid Work - Gallup",
+          "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+          "as_of": "10 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "https://www.gallup.com/workplace/316313/understanding-and-managing-remote-workers.aspx",
+          "title": "A Strategic Guide for Managing Hybrid and Remote Teams - Gallup",
+          "url": "https://www.gallup.com/workplace/316313/understanding-and-managing-remote-workers.aspx",
+          "as_of": "101 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "kb-remote-work-2024-trends",
+          "title": "Hybrid dominates; several large employers tightened office mandates",
+          "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+          "as_of": "2025-01",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C5",
+      "claim": "Local offices might become optional hubs and async culture will become standard practice.",
+      "speaker": "Mark Rivera",
+      "timestamp": "00:05:00",
+      "claim_type": "prediction",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "This is a prediction. Gallup (September 2025) reports that work-location patterns have been stable since 2022, with hybrid dominant, while some large employers (for example Amazon from January 2025) have tightened office mandates. The evidence neither confirms nor rules out offices becoming optional hubs or async culture becoming standard.",
+      "evidence": [
+        {
+          "source_id": "https://www.gallup.com/workplace/694361/hybrid-work-retreat-barely.aspx",
+          "title": "Hybrid Work in Retreat? Barely.",
+          "url": "https://www.gallup.com/workplace/694361/hybrid-work-retreat-barely.aspx",
+          "as_of": "227 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "kb-remote-work-2024-trends",
+          "title": "Hybrid dominates; several large employers tightened office mandates",
+          "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+          "as_of": "2025-01",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    }
+  ],
+  "reviewer_notes": [
+    "C2 (relying on Slack for everything leads to burnout): only other_web sources support it, so it is flagged for human review. Consider presenting it as the guest's opinion.",
+    "C1: 'handbooks for everything' fits GitLab's public handbook exactly. Automattic and Doist are documentation-heavy and async-first, but it may overstate them as formal handbooks.",
+    "C4 and C5 are predictions. Current Gallup data show hybrid is dominant and fully remote is about 26% of remote-capable US employees. Remote-first firms do not dominate yet, so the prediction should not be presented as a trend.",
+    "The episode frames itself around '2025 and beyond' but is being published after November 2026. Editors may want to add a date note.",
+    "Possible transcription oddity at 00:01:50: 'handbooks instead of manuals' (the two are near-synonyms). Check the audio.",
+    "Speakers are clearly labeled and nothing is ambiguous. The guest's credentials or affiliation are not stated in the episode."
+  ],
+  "ingest": {
+    "lines_parsed": 19,
+    "lines_kept": 19,
+    "lines_cleaned": 1,
+    "lines_flagged": 0,
+    "lines_dropped": [],
+    "speakers_mapped": {
+      "Sarah": "Sarah Johnson",
+      "Mark": "Mark Rivera"
+    },
+    "flags": []
+  },
+  "metrics": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "model_turns": 5,
+    "tool_calls": 12,
+    "rejected_tool_calls": 0,
+    "searches": 2,
+    "web_searches": 10,
+    "blocked_results_dropped": 0,
+    "input_tokens": 20,
+    "output_tokens": 6073,
+    "cache_read_tokens": 124427,
+    "cache_write_tokens": 26014,
+    "estimated_cost_usd": 0.3014,
+    "duration_seconds": 77.4
+  },
+  "generated_at": "2026-11-06T01:15:23+00:00"
+}

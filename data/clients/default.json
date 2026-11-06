@@ -1,0 +1,36 @@
+{
+  "client_id": "default",
+  "name": "Demo agency (default policy)",
+  "notes": "Stand-in for a customer-agreed source list. In production each agency client agrees these lists at onboarding and changes them only through the admin path (docs/DEPLOYMENT.md). The agent never edits this file.",
+  "search_mode": "prefer_trusted",
+  "trusted_domains": [
+    {"domain": "fda.gov", "topics": ["medical", "regulation"]},
+    {"domain": "nih.gov", "topics": ["medical", "research"]},
+    {"domain": "cdc.gov", "topics": ["medical"]},
+    {"domain": "hhs.gov", "topics": ["medical", "regulation"]},
+    {"domain": "cms.gov", "topics": ["medical", "regulation"]},
+    {"domain": "who.int", "topics": ["medical"]},
+    {"domain": "nejm.org", "topics": ["medical", "research"]},
+    {"domain": "jamanetwork.com", "topics": ["medical", "research"]},
+    {"domain": "science.org", "topics": ["research"]},
+    {"domain": "nature.com", "topics": ["research"]},
+    {"domain": "nasa.gov", "topics": ["space"]},
+    {"domain": "esa.int", "topics": ["space"]},
+    {"domain": "bls.gov", "topics": ["economy", "workplace"]},
+    {"domain": "census.gov", "topics": ["economy"]},
+    {"domain": "sec.gov", "topics": ["business", "finance"]},
+    {"domain": "federalreserve.gov", "topics": ["economy", "finance"]},
+    {"domain": "gallup.com", "topics": ["workplace"]},
+    {"domain": "pewresearch.org", "topics": ["workplace", "society"]},
+    {"domain": "hbr.org", "topics": ["workplace", "business"]},
+    {"domain": "reuters.com", "topics": ["news"]},
+    {"domain": "apnews.com", "topics": ["news"]}
+  ],
+  "blocked_domains": [
+    {"domain": "quora.com", "reason": "user-generated answers, not acceptable as evidence"},
+    {"domain": "reddit.com", "reason": "user-generated, not acceptable as evidence"},
+    {"domain": "pinterest.com", "reason": "not a source"},
+    {"domain": "answers.com", "reason": "user-generated answers"}
+  ],
+  "pinned_facts": []
+}

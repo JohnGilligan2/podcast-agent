@@ -1,0 +1,38 @@
+{
+  "client_id": "example_healthtech",
+  "name": "Northwind Health (fictional example client)",
+  "notes": "Fictional client used to show a strict policy: web search is restricted to regulators and peer-reviewed journals, and the client supplies facts about its own product that are not on the public web.",
+  "search_mode": "trusted_only",
+  "trusted_domains": [
+    {"domain": "fda.gov", "topics": ["medical", "regulation"]},
+    {"domain": "nih.gov", "topics": ["medical", "research"]},
+    {"domain": "cdc.gov", "topics": ["medical"]},
+    {"domain": "hhs.gov", "topics": ["medical", "regulation"]},
+    {"domain": "cms.gov", "topics": ["medical", "regulation"]},
+    {"domain": "who.int", "topics": ["medical"]},
+    {"domain": "nejm.org", "topics": ["medical", "research"]},
+    {"domain": "jamanetwork.com", "topics": ["medical", "research"]}
+  ],
+  "blocked_domains": [
+    {"domain": "reddit.com", "reason": "user-generated"},
+    {"domain": "quora.com", "reason": "user-generated"}
+  ],
+  "pinned_facts": [
+    {
+      "id": "pin-northwind-triage-status",
+      "title": "Northwind Triage app regulatory status",
+      "source": "Northwind Health regulatory affairs (client-supplied)",
+      "as_of": "2026-09",
+      "tags": ["northwind", "symptom checker", "triage", "fda", "wellness"],
+      "content": "Northwind Triage is a symptom-information app. It is not an FDA-cleared or FDA-approved medical device and does not diagnose. It tells users which level of care to consider and always advises contacting a clinician for urgent symptoms."
+    },
+    {
+      "id": "pin-northwind-scribe-usage",
+      "title": "Northwind Scribe deployment figures",
+      "source": "Northwind Health investor relations (client-supplied)",
+      "as_of": "2026-06",
+      "tags": ["northwind", "ambient scribe", "documentation", "clinicians"],
+      "content": "Northwind Scribe, the company's ambient clinical documentation assistant, was in use at 140 clinics as of June 2026. Clinicians review and sign every note it drafts."
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "episode_id": "ep900",
+  "title": "Retail Media Roundup",
+  "host": "Jordan Lee",
+  "guests": [
+    "Dr. Maya Okafor",
+    "Tom Brandt"
+  ],
+  "source_file": "ep900_messy.txt",
+  "client_id": "default",
+  "source_policy_version": "b46f0e416d7b",
+  "status": "complete",
+  "error": null,
+  "plan": [
+    {
+      "step": 1,
+      "action": "Draft summary and key notes from the short transcript",
+      "tool": "submit_summary / submit_key_notes",
+      "rationale": "Core deliverables"
+    },
+    {
+      "step": 2,
+      "action": "Register claims: Amazon ads >$50B, FTC 2024 fake reviews rule, async tool anecdote",
+      "tool": "register_claims",
+      "rationale": "Fact-check inputs"
+    },
+    {
+      "step": 3,
+      "action": "Search KB and web for each claim",
+      "tool": "search_knowledge_base / web_search",
+      "rationale": "Evidence gathering, prefer trusted domains"
+    },
+    {
+      "step": 4,
+      "action": "Record verdicts and finish with reviewer notes (transcription 'async yo', timestamp ingest note, 'FTC fined' question)",
+      "tool": "record_verdict / finish",
+      "rationale": "Complete report"
+    }
+  ],
+  "summary": {
+    "text": "In this short episode of Retail Media Roundup, host Jordan Lee is joined by guests Dr. Maya Okafor and Tom Brandt for a quick look at the retail media and advertising landscape. The conversation opens with Amazon's advertising business. Dr. Okafor says Amazon's ad revenue passed $50 billion last year, and Tom Brandt agrees, saying he likes the momentum behind the business. The exchange presents Amazon as a dominant and still-growing force in retail media, though neither guest goes into what drives that growth or what it means for other advertisers.\n\nNext, Jordan Lee asks about regulation, recalling that the Federal Trade Commission had fined someone over fake reviews. Dr. Okafor corrects this framing. She explains that in 2024 the FTC finalised a rule banning fake reviews, making it a regulatory action rather than a single fine. The point matters for brands and agencies that rely on consumer reviews and testimonials in commerce and retail media campaigns.\n\nThe discussion then briefly moves to technology. Tom Brandt says his team uses an asynchronous programming tool, apparently Python's asyncio, for their data pipelines and finds it fast. This is a personal endorsement rather than a detailed technical discussion. After a brief moment of crosstalk, in which Dr. Okafor yields the floor, Jordan Lee closes the show.\n\nOverall, the episode is a fast-paced roundup rather than a deep analysis. Its main takeaways are that Amazon's ad business is very large and growing, that the FTC's fake-review rule now shapes how marketers handle reviews, and that the guests are generally upbeat about the momentum in retail media. No forecasts or detailed recommendations are offered beyond these brief opinions.",
+    "word_count": 274,
+    "core_themes": [
+      "Amazon's scale in retail media advertising",
+      "FTC regulation of fake reviews",
+      "Data pipeline tooling"
+    ],
+    "key_discussions": [
+      "Amazon's ad business size (said to have passed $50B last year)",
+      "The FTC's 2024 final rule banning fake reviews, a rule rather than a fine",
+      "Tom Brandt's team using async tooling for pipelines"
+    ],
+    "outcomes": [
+      "The guests are upbeat about Amazon's ad momentum",
+      "The host's 'fine' framing is corrected to a 2024 FTC rule",
+      "Tom Brandt endorses async tooling as fast for pipelines"
+    ]
+  },
+  "key_notes": {
+    "takeaways": [
+      "Amazon is a major force in retail media, with its ad business described as passing $50 billion a year (reported 2025 figures are higher, about $68.6B).",
+      "The FTC finalised a rule banning fake reviews and testimonials in 2024, so brands should audit how they get and display reviews.",
+      "The FTC's action on fake reviews was a rule, not a single fine, so the compliance duty applies across the industry.",
+      "Asynchronous tooling such as Python's asyncio can speed up data pipelines, according to Tom Brandt's experience.",
+      "Check the latest earnings filings before quoting retail media revenue figures, because they go out of date quickly."
+    ],
+    "quotes": [
+      {
+        "timestamp": "00:00:12",
+        "speaker": "Dr. Maya Okafor",
+        "quote": "Amazon's ad business passed $50 billion last year.",
+        "why_notable": "Headline statistic on Amazon's retail media scale",
+        "raw_line": "Thanks Jordan. So, like, Amazon's ad business, you know, passed $50 billion last year."
+      },
+      {
+        "timestamp": "00:01:20",
+        "speaker": "Dr. Maya Okafor",
+        "quote": "in 2024 the F.T.C. finalised a rule banning fake reviews.",
+        "why_notable": "Clarifies the regulatory change affecting review-based marketing",
+        "raw_line": "Yeah, in 2024 the F.T.C. finalised a rule banning fake reviews."
+      },
+      {
+        "timestamp": "00:00:31",
+        "speaker": "Tom Brandt",
+        "quote": "I like the momentum there.",
+        "why_notable": "Guest's upbeat view of Amazon's ad growth",
+        "raw_line": "I I think that's right. I like the, the momentum there."
+      }
+    ],
+    "topics": [
+      "retail-media",
+      "amazon-ads",
+      "ftc",
+      "fake-reviews",
+      "advertising-regulation",
+      "data-pipelines"
+    ]
+  },
+  "fact_checks": [
+    {
+      "claim_id": "C1",
+      "claim": "Amazon's ad business passed $50 billion last year (2025).",
+      "speaker": "Dr. Maya Okafor",
+      "timestamp": "00:00:12",
+      "claim_type": "statistic",
+      "verdict": "possibly_outdated_or_inaccurate",
+      "verdict_label": "⚠️ Possibly outdated/inaccurate",
+      "confidence": 0.55,
+      "rationale": "\"Last year\" means 2025 (today is 2026-11-05). Reports of Amazon's Q4 2025 earnings (Feb 6, 2026) give full-year 2025 advertising revenue of about $68.6B. \"Passed $50 billion\" is technically true but understates the figure by roughly $18B. The $50B mark was already crossed in 2024 (~$56B), so the claim reads as a stale number. The Amazon FY2025 ARS on sec.gov came up in the search, but the excerpt only showed total revenue ($717B), so it isn't cited for the ad figure.",
+      "evidence": [
+        {
+          "source_id": "https://www.marketingdive.com/news/amazon-annual-ad-revenue-passes-68b-boosted-by-full-funnel-strategy/811569/",
+          "title": "Amazon’s annual ad revenue passes $68B, boosted by full-funnel strategy",
+          "url": "https://www.marketingdive.com/news/amazon-annual-ad-revenue-passes-68b-boosted-by-full-funnel-strategy/811569/",
+          "as_of": "272 days ago",
+          "tier": "other_web"
+        },
+        {
+          "source_id": "https://ppc.land/amazons-69b-ad-business-gets-one-sentence-in-jassys-2025-letter/",
+          "title": "Amazon's $69B ad business gets one sentence in Jassy's 2025 letter",
+          "url": "https://ppc.land/amazons-69b-ad-business-gets-one-sentence-in-jassys-2025-letter/",
+          "as_of": "209 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": true,
+      "review_reason": "All cited sources are other_web (trade press). Confirm the $68.6B 2025 advertising figure against Amazon's 10-K/ARS on sec.gov. Also decide whether to note in the show notes that the claim understates the figure."
+    },
+    {
+      "claim_id": "C2",
+      "claim": "In 2024 the FTC finalised a rule banning fake reviews.",
+      "speaker": "Dr. Maya Okafor",
+      "timestamp": "00:01:20",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.6,
+      "rationale": "On August 14, 2024 the FTC announced a final rule banning fake reviews and testimonials (16 CFR Part 465), which took effect October 21, 2024. The FTC's own press release and several law-firm analyses confirm this. Note that the host's question implied a fine. The guest correctly described a rule, not a fine. FTC warning letters under the rule followed in December 2025.",
+      "evidence": [
+        {
+          "source_id": "https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials",
+          "title": "Federal Trade Commission Announces Final Rule Banning Fake Reviews and Testimonials",
+          "url": "https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials",
+          "as_of": "807 days ago",
+          "tier": "other_web"
+        },
+        {
+          "source_id": "https://www.mcdermottlaw.com/insights/ftc-announces-rule-to-crack-down-on-fake-reviews/",
+          "title": "FTC Announces Rule to Crack Down on Fake Reviews",
+          "url": "https://www.mcdermottlaw.com/insights/ftc-announces-rule-to-crack-down-on-fake-reviews/",
+          "as_of": "176 days ago",
+          "tier": "other_web"
+        },
+        {
+          "source_id": "https://www.fourscorelaw.com/resources/ftc-bans-fake-reviews-and-testimonials",
+          "title": "FTC Fake Reviews Rule 2024: Compliance Guide — Fourscore Business Law",
+          "url": "https://www.fourscorelaw.com/resources/ftc-bans-fake-reviews-and-testimonials",
+          "as_of": "227 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": true,
+      "review_reason": "Source policy: ftc.gov is not on the client's trusted-domain list, so every cited source counts as other_web. Confidence is capped at 0.6 and a human sign-off is needed, even though ftc.gov is the primary source."
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Tom Brandt's team uses 'async yo' (possibly asyncio) for their pipelines and it is fast.",
+      "speaker": "Tom Brandt",
+      "timestamp": "00:01:45",
+      "claim_type": "anecdote",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "This is a personal anecdote about Tom's own tooling and can't be checked against outside sources. \"async yo\" is very likely a mistranscription of Python's asyncio library.",
+      "evidence": [],
+      "needs_human_review": false,
+      "review_reason": null
+    }
+  ],
+  "reviewer_notes": [
+    "Likely transcription error at 00:01:45: 'async yo' is almost certainly 'asyncio' (Python library). The summary and takeaways treat it that way, so please confirm.",
+    "The 00:02:30 timestamp on the closing line was made up at ingest (copied from the previous line), so the real time is unknown.",
+    "At 00:01:05 the host says the FTC 'fined somebody'. The guest corrects this to a 2024 rule (announced Aug 14, 2024, effective Oct 21, 2024). No specific fine is identified.",
+    "C1: The Amazon ad claim ('passed $50B last year') understates the reported 2025 figure of about $68.6B and is marked possibly outdated. Verify against Amazon's FY2025 10-K/ARS on sec.gov, since the evidence cited is trade press (other_web).",
+    "C2: Verified using the FTC's own press release. ftc.gov is not on the client's trusted-domain list, so source policy capped confidence at 0.6 and flagged it for human review. Consider adding ftc.gov as a trusted regulation domain.",
+    "The web search tool-use limit was hit before trusted news sources (reuters/apnews) could be searched for C1 and C2.",
+    "At 00:02:10 Dr. Okafor says 'Sorry - go ahead' with no visible interruption, so some content may be missing from the transcript."
+  ],
+  "ingest": {
+    "lines_parsed": 10,
+    "lines_kept": 8,
+    "lines_cleaned": 5,
+    "lines_flagged": 1,
+    "lines_dropped": [
+      {
+        "timestamp": "00:02:10",
+        "speaker": "Jordan",
+        "raw_text": "Hmm. [crosstalk] Okay."
+      },
+      {
+        "timestamp": "00:02:30",
+        "speaker": "Tom",
+        "raw_text": "Um. Uh. Yeah."
+      }
+    ],
+    "speakers_mapped": {
+      "Jordan": "Jordan Lee",
+      "Maya": "Dr. Maya Okafor",
+      "Tom": "Tom Brandt",
+      "JORDAN": "Jordan Lee",
+      "Dr. Okafor": "Dr. Maya Okafor"
+    },
+    "flags": [
+      {
+        "timestamp": "00:02:30",
+        "speaker": "Jordan Lee",
+        "flags": [
+          "no timestamp in file; using 00:02:30 from the previous line"
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "model_turns": 3,
+    "tool_calls": 10,
+    "rejected_tool_calls": 0,
+    "searches": 2,
+    "web_searches": 8,
+    "blocked_results_dropped": 0,
+    "input_tokens": 16,
+    "output_tokens": 5310,
+    "cache_read_tokens": 82853,
+    "cache_write_tokens": 21237,
+    "estimated_cost_usd": 0.2456,
+    "duration_seconds": 66.8
+  },
+  "generated_at": "2026-11-06T01:16:14+00:00"
+}

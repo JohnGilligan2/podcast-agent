@@ -1,0 +1,7 @@
+# Title: Space Weekly - Mars Update
+# Host: Host
+# Guests: Guest
+[00:02:14] Host: So NASA recently announced something about a new Mars mission.
+[00:02:18] Guest: Yes, um, it's launching in early 2026 — they're planning to bring back samples.
+[00:03:01] Host: Wow, that's that's exciting.
+[00:03:05] Guest: And the Perseverance rover has already, uh, collected the the samples it would bring home.
