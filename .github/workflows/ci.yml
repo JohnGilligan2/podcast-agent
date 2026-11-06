@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: pip install ".[dev,gui]"
+      - run: pip install -e ".[dev,gui]"
       - name: Lint
         run: ruff check src tests
       - name: Unit, agent-loop and GUI smoke tests (scripted model, no API key)
@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-      - run: pip install ".[dev]"
+      - run: pip install -e ".[dev]"
       - name: Score the committed release run (checks the scorer itself, free)
         run: python -m podcast_agent eval examples/sample_run
       - name: Run the golden episodes

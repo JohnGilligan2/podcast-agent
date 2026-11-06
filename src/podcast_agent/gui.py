@@ -17,7 +17,7 @@ from pathlib import Path
 import streamlit as st
 
 from podcast_agent.config import PROJECT_ROOT, Settings
-from podcast_agent.ingest import MAX_FILE_BYTES, load_episode
+from podcast_agent.ingest import ASCII_MAP, MAX_FILE_BYTES, load_episode
 from podcast_agent.render import TIER_TAGS
 from podcast_agent.schemas import VERDICT_LABELS
 from podcast_agent.store import SQLiteStore, open_store
@@ -72,6 +72,10 @@ def elapsed(job: dict) -> str:
     start = datetime.fromisoformat(job["started_at"])
     end = datetime.fromisoformat(job["finished_at"]) if job.get("finished_at") else datetime.now(UTC)
     return f"{(end - start).total_seconds():.0f}s"
+
+
+def version(value: str | None) -> str:
+    return "not recorded" if value in (None, "", "unknown") else value   # results from before v0.1.0
 
 
 def who() -> str:
@@ -168,9 +172,12 @@ def page_jobs() -> None:
 def _raw_with_removals(raw: str, clean: str) -> str:
     """Raw line with the words cleaning removed struck through, so editors see exactly what went."""
     a, b = raw.split(), clean.split()
+
+    def key(word: str) -> str:   # compare words, not quote style: ’ and ' or — and - are the same word
+        return word.translate(ASCII_MAP).lower().strip(".,!?;:")
+
     out = []
-    for op, i1, i2, _j1, _j2 in difflib.SequenceMatcher(a=[w.lower().strip(".,!?;:") for w in a],
-                                                        b=[w.lower().strip(".,!?;:") for w in b],
+    for op, i1, i2, _j1, _j2 in difflib.SequenceMatcher(a=[key(w) for w in a], b=[key(w) for w in b],
                                                         autojunk=False).get_opcodes():
         chunk = html.escape(" ".join(a[i1:i2]))
         if chunk:
@@ -185,7 +192,7 @@ def transcript_html(lines: list[dict], view: str, focus: str | None, changed_onl
     rows = []
     for ln in lines:
         raw, clean = ln["raw_text"] or "", ln["clean_text"] or ""
-        changed = " ".join(raw.split()) != clean
+        changed = " ".join(raw.translate(ASCII_MAP).split()) != clean   # quote style alone is not a change
         if changed_only and not changed:
             continue
         cls = " ".join(filter(None, ["focus" if focus and ln["timestamp"] == focus else "",
@@ -235,7 +242,7 @@ def page_report() -> None:
     m = r.metrics
     st.header(r.title)
     st.caption(f"`{r.episode_id}` · {STATUS_ICON.get(r.status, '')} {r.status} · client `{r.client_id}` · "
-               f"release `{r.code_version}` · prompt `{r.prompt_version}` · `{m.model}` · "
+               f"release `{version(r.code_version)}` · prompt `{version(r.prompt_version)}` · `{m.model}` · "
                f"${m.estimated_cost_usd or 0:.3f} · {m.duration_seconds:.0f}s")
     if r.error:
         st.warning(f"Run error: {r.error}")
@@ -351,7 +358,7 @@ def page_history() -> None:
 
     st.dataframe([{"Episode": e["id"], "Title": e["title"], "Client": e["client"], "Status": e["status"],
                    "Claims": e["claims"], "Needs review": e["needs_review"], "Open disputes": e["open_disputes"],
-                   "Processed": e["processed_at"], "Release": e["code_version"], "Prompt": e["prompt_version"],
+                   "Processed": e["processed_at"], "Release": version(e["code_version"]), "Prompt": version(e["prompt_version"]),
                    "Cost $": round(e["cost"] or 0, 3)} for e in episodes], hide_index=True, use_container_width=True)
     if episodes:
         c1, c2 = st.columns([3, 1])
