@@ -76,9 +76,12 @@ class KnowledgeBase:
 
     @classmethod
     def load(cls, path: str | Path) -> "KnowledgeBase":
-        data = json.loads(Path(path).read_text(encoding="utf-8"))
-        docs = [KBDocument(**{k: d[k] for k in KBDocument.__dataclass_fields__ if k in d})
-                for d in data["documents"]]
+        try:
+            data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+            docs = [KBDocument(**{k: d[k] for k in KBDocument.__dataclass_fields__ if k in d})
+                    for d in data["documents"]]
+        except (KeyError, TypeError, AttributeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"{path}: not a valid knowledge base file ({exc!r})") from exc
         return cls(docs)
 
     def with_documents(self, extra: list[KBDocument]) -> "KnowledgeBase":

@@ -6,7 +6,8 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 COPY pyproject.toml ./
 COPY src ./src
-RUN pip install ".[dev]"
+ARG EXTRAS=dev
+RUN pip install ".[${EXTRAS}]"
 
 # ---- runtime stage --------------------------------------------------------------------
 FROM python:3.12-slim

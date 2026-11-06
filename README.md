@@ -61,6 +61,7 @@ pytest -q
 | `--effort` | `medium` | `low` … `max` reasoning effort |
 | `--concurrency` | `3` | Episodes processed in parallel |
 | `--max-steps` | `25` | Model turns per episode before giving up |
+| `--otel` | off | Optional: send OpenTelemetry traces and metrics (see [Optional observability](#optional-observability-scaffolding)) |
 | `-v` | off | Debug logging |
 
 Every option can also be set in `.env` (see [`.env.example`](.env.example)).
@@ -188,8 +189,11 @@ flowchart LR
 - **Within one episode:** Claude batches independent tool calls in one turn (several searches, many
   verdicts), and all results go back in one message.
 - **What stays sequential:** the turns of one episode, because each depends on the last.
-- **Why not asyncio:** threads give the same speed-up here with ordinary functions. In production,
-  scale comes from a queue and more worker containers (see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
+- **Why not asyncio (yet):** measured on ep003, the agent spent 35.9 s waiting on Claude and 0.14 s in its
+  own tools. Threads overlap that waiting with ordinary, readable functions. Next steps are more worker
+  pods on Kubernetes pulling from a queue (KEDA scales on queue depth), with a shared rate limiter sized to
+  the model quota; asyncio inside a pod comes later, when one process needs hundreds of calls in flight
+  (see [`docs/DEPLOYMENT.md` §7](docs/DEPLOYMENT.md)).
 
 ---
 
@@ -222,6 +226,23 @@ Claude's summary, counted in code, so filler can never pad it. The filler lists 
 top of `ingest.py`, so adding a word is a one-line change.
 
 ---
+
+## Reliability: what won't crash it
+
+One bad input or setting never takes down the run. Each case below has a test in
+[`tests/test_edge_cases.py`](tests/test_edge_cases.py).
+
+| Situation | What happens |
+|---|---|
+| Wrong file type, empty, binary, broken or wrong-shaped JSON, unreadable, over 5 MB | That file is skipped with a one-line reason; the other files run |
+| cp1252, UTF-16 or UTF-8-with-BOM files; NUL, zero-width or control characters | Decoded and cleaned; `raw_text` keeps the original |
+| `null` text or speaker, numeric or unreadable timestamps, `M:SS` past 60 minutes, guests as a string | Sensible defaults; odd lines are kept and flagged rather than failing the file |
+| Non-Latin speaker names, lines starting with a URL | Parsed correctly |
+| Two files with the same episode id; ids like `../../x` or `ep:01` | Ids made unique and folder-safe, so no output is overwritten or written outside `output/` |
+| A transcript that tries to close its prompt wrapper (`</transcript>`) | Neutralised before it reaches Claude |
+| Missing API key, bad `.env` value, malformed client policy or knowledge base | One clear error line and exit code 2, before any spend |
+| Claude refuses, times out, or the step budget runs out | That episode gets a `failed` / `incomplete` report; the others carry on |
+| Console that can't print emoji (Windows cp1252, redirected output) | Characters are replaced, never a crash |
 
 ## Outputs
 
@@ -261,6 +282,7 @@ src/podcast_agent/
   agent.py           agent loop, logging, metrics, trace
   tools.py           tool schemas + guardrails (ToolExecutor)
   sources.py         per-client source policy: tiers, allow/block lists, pinned facts
+  telemetry.py       optional OpenTelemetry traces + metrics (latency, tokens, cost, verdicts)
   prompts.py         system prompt and per-episode prompt
   llm.py             Anthropic client wrapper (the only provider-specific file)
   ingest.py          .json / .txt loading and cleaning
@@ -273,10 +295,24 @@ data/
   samples/           a messy .txt transcript in the format from the brief
   clients/           source policies: default.json, example_healthtech.json
   knowledge_base.json curated reference sources (with as_of dates)
-tests/               unit tests + scripted end-to-end loop test (no API key needed)
+tests/               72 tests: guardrails, sources, messy ingest, hostile inputs, agent loop, telemetry (no API key)
+observability/       optional scaffolding: OTel Collector, Prometheus, Jaeger, Grafana dashboard
 docs/DEPLOYMENT.md   production deployment strategy
 examples/sample_run/ committed outputs from a real run
 ```
+
+## Optional: observability scaffolding
+
+**Not required to run anything.** Every report already records where the time went (each Claude turn,
+each tool), tokens and cost — e.g. *"waiting on Claude 35.9s across 4 turns (18.2s · 3.6s · 10.6s · 3.5s),
+own tools 0.14s"* — and `trace.jsonl` has `model_call` and `tool_timing` events.
+
+For production, `--otel` sends OpenTelemetry traces (one per episode, with the Anthropic SDK's own spans
+nested inside, metadata only) and metrics (latency, tokens, cost, verdicts, rejections) to any OTLP
+collector, so they can feed Prometheus/Grafana and Langfuse. It needs `pip install ".[otel]"`; without it,
+or without a collector, the run continues normally. A ready-to-try local stack and dashboard are in
+[`observability/`](observability/README.md); the production design is in
+[`docs/DEPLOYMENT.md` §11](docs/DEPLOYMENT.md).
 
 ## Extending it
 

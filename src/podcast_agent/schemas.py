@@ -91,6 +91,11 @@ class RunMetrics(BaseModel):
     cache_write_tokens: int = 0
     estimated_cost_usd: float | None = None
     duration_seconds: float = 0.0
+    # Latency breakdown: where the wall time went
+    model_seconds: float = 0.0                       # waiting on Claude (incl. server-side web search)
+    tool_seconds: float = 0.0                        # running our own tools and guardrails
+    turn_seconds: list[float] = []                   # each model call, in order
+    tool_seconds_by_name: dict[str, float] = {}
 
 
 class EpisodeReport(BaseModel):

@@ -95,12 +95,13 @@ class ScriptedLLM:
         return self.responses.pop(0)
 
 
-def test_agent_loop_self_corrects_and_completes(episode, kb, tmp_path):
+def happy_script():
+    """A full episode for ep001: plan, a rejected summary, the fix, notes, one claim, search, verdict, finish."""
     notes = {"takeaways": ["a", "b", "c", "d", "e"],
              "quotes": [{"timestamp": "03:25", "speaker": "Mark", "quote": "Outcomes over hours.", "why_notable": "x"},
                         {"timestamp": "04:10", "speaker": "Mark", "quote": "Remote doesn’t mean isolated", "why_notable": "y"}],
              "topics": ["remote-work", "async", "culture"]}
-    script = [
+    return [
         _resp(NS(type="thinking", thinking="Plan first."),
               _tool(1, "create_plan", {"steps": [{"action": "summarise", "tool": "submit_summary", "rationale": "r"}]})),
         _resp(_tool(2, "submit_summary", {"summary": "short", "core_themes": ["a", "b"],
@@ -115,7 +116,10 @@ def test_agent_loop_self_corrects_and_completes(episode, kb, tmp_path):
                                           "rationale": "KB confirms", "evidence_ids": ["kb-gitlab-all-remote"]})),
         _resp(_tool(8, "finish", {"reviewer_notes": ["none"]})),
     ]
-    llm = ScriptedLLM(script)
+
+
+def test_agent_loop_self_corrects_and_completes(episode, kb, tmp_path):
+    llm = ScriptedLLM(happy_script())
     agent = PodcastAgent(llm, kb, Settings(), today="2026-11-05")
     report = agent.run(episode, trace_path=tmp_path / "trace.jsonl")
 
@@ -124,7 +128,12 @@ def test_agent_loop_self_corrects_and_completes(episode, kb, tmp_path):
     rejected = llm.calls[2]["content"][0]  # tool_result sent back after the short summary
     assert rejected["is_error"] is True and "must be 200-300" in rejected["content"]
     assert len(report.fact_checks) == 1 and report.fact_checks[0].evidence[0].source_id == "kb-gitlab-all-remote"
-    assert (tmp_path / "trace.jsonl").read_text(encoding="utf-8").count('"event": "tool_call"') == 8
+    trace = (tmp_path / "trace.jsonl").read_text(encoding="utf-8")
+    assert trace.count('"event": "tool_call"') == 8
+    # latency is always recorded, telemetry or not
+    m = report.metrics
+    assert len(m.turn_seconds) == 6 and m.model_seconds >= 0 and "submit_summary" in m.tool_seconds_by_name
+    assert trace.count('"event": "model_call"') == 6 and '"duration_ms"' in trace
 
 
 def test_agent_nudges_when_model_stops_early(episode, kb):

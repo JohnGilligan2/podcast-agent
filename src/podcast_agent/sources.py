@@ -63,8 +63,15 @@ class ClientSources:
 
     @classmethod
     def load(cls, path: str | Path) -> "ClientSources":
+        try:
+            return cls._load(path)
+        except (KeyError, TypeError, AttributeError, json.JSONDecodeError) as exc:
+            raise ValueError(f"{path}: not a valid client source policy ({exc!r})") from exc
+
+    @classmethod
+    def _load(cls, path: str | Path) -> "ClientSources":
         raw = Path(path).read_bytes()
-        data = json.loads(raw)
+        data = json.loads(raw.decode("utf-8-sig"))
         mode = data.get("search_mode", "prefer_trusted")
         if mode not in SEARCH_MODES:
             raise ValueError(f"{path}: search_mode must be one of {SEARCH_MODES}, got {mode!r}")

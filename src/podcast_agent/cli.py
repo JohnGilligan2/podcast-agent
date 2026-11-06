@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import replace
@@ -23,10 +24,11 @@ from rich.table import Table
 
 from .agent import PodcastAgent
 from .config import PROJECT_ROOT, Settings, resolve_client
-from .ingest import TranscriptError, load_episode
+from .ingest import Episode, load_episode
 from .knowledge_base import KnowledgeBase
 from .render import write_episode, write_index
 from .sources import ClientSources
+from .telemetry import setup_telemetry
 
 console = Console()
 
@@ -59,12 +61,35 @@ def collect_inputs(paths: list[str]) -> list[Path]:
     files: list[Path] = []
     for t in targets:
         if t.is_dir():
-            files += sorted(p for p in t.iterdir() if p.suffix.lower() in {".json", ".txt"})
+            files += sorted(p for p in t.iterdir() if p.is_file() and p.suffix.lower() in {".json", ".txt"})
         elif t.exists():
             files.append(t)
         else:
             raise SystemExit(f"Not found: {t}")
     return files
+
+
+def load_episodes(files: list[Path], logger: logging.Logger) -> list[Episode]:
+    """Load every file it can. A bad file (wrong type, broken JSON, unreadable, empty) is logged and
+    skipped; it never stops the others. Episode ids are made unique so no two runs share an output folder."""
+    episodes: list[Episode] = []
+    seen: set[str] = set()
+    for f in files:
+        try:
+            ep = load_episode(f)
+        except Exception as exc:  # noqa: BLE001 — one bad input must not sink the run
+            logger.error("skipping %s: %s", f.name, exc, extra={"episode": "ingest"})
+            continue
+        base, n = ep.episode_id, 2
+        while ep.episode_id in seen:
+            ep.episode_id = f"{base}-{n}"
+            n += 1
+        if ep.episode_id != base:
+            logger.warning("%s: episode id %r already used; using %r", f.name, base, ep.episode_id,
+                           extra={"episode": "ingest"})
+        seen.add(ep.episode_id)
+        episodes.append(ep)
+    return episodes
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -77,24 +102,25 @@ def cmd_run(args: argparse.Namespace) -> int:
         overrides["enable_web_search"] = args.web_search
     if args.client:
         overrides["client_config"] = resolve_client(args.client)
+    if args.otel:
+        overrides["otel"] = True
     settings = replace(settings, **overrides)
 
     logger = setup_logging(args.verbose, settings.output_dir / "run.log")
     kb = KnowledgeBase.load(settings.kb_path)
     sources = ClientSources.load(settings.client_config)
 
-    episodes = []
-    for f in collect_inputs(args.inputs):
-        try:
-            episodes.append(load_episode(f))
-        except TranscriptError as exc:
-            logger.error("skipping %s: %s", f.name, exc, extra={"episode": "ingest"})
+    episodes = load_episodes(collect_inputs(args.inputs), logger)
     if not episodes:
         console.print("[red]No valid transcripts to process.[/red]")
         return 2
+    if not (os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN")):
+        console.print("[red]ANTHROPIC_API_KEY is not set.[/red] Put it in .env (see .env.example).")
+        return 2
 
     from .llm import ClaudeClient  # imported here so `kb-search` works without the SDK configured
-    agent = PodcastAgent(ClaudeClient(settings), kb, settings, logger, sources=sources)
+    telemetry = setup_telemetry(settings.otel)   # before the client, so the SDK's spans join our traces
+    agent = PodcastAgent(ClaudeClient(settings), kb, settings, logger, sources=sources, telemetry=telemetry)
     logger.info("model=%s effort=%s web_search=%s episodes=%d concurrency=%d kb_docs=%d",
                 settings.model, settings.effort, settings.enable_web_search, len(episodes),
                 settings.concurrency, len(kb.documents), extra={"episode": "run"})
@@ -120,6 +146,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             except Exception:  # noqa: BLE001 — agent.run already turns model errors into 'failed' reports
                 logger.exception("episode crashed outside the agent loop", extra={"episode": ep.episode_id})
     reports = [done[ep.episode_id] for ep in episodes if ep.episode_id in done]   # input order
+    telemetry.shutdown()   # flush spans and metrics before exit
     index = write_index(reports, settings.output_dir)
 
     table = Table(title="Run summary")
@@ -181,6 +208,8 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--max-steps", type=int)
     run.add_argument("--web-search", action=argparse.BooleanOptionalAction, default=None,
                      help="live web search (default on); --no-web-search = offline, pinned facts + local KB only")
+    run.add_argument("--otel", action="store_true",
+                     help="send OpenTelemetry traces and metrics (OTEL_EXPORTER_OTLP_ENDPOINT, default localhost:4318)")
     run.add_argument("--client", help="client source policy: id under data/clients/ or a path (default: default)")
     run.add_argument("-v", "--verbose", action="store_true")
     run.set_defaults(func=cmd_run)
@@ -196,7 +225,19 @@ def main(argv: list[str] | None = None) -> int:
     src.set_defaults(func=cmd_sources)
 
     args = parser.parse_args(argv)
-    return args.func(args)
+    for stream in (sys.stdout, sys.stderr):   # never crash on a console that can't show ✅ (Windows cp1252)
+        try:
+            stream.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
+    try:
+        return args.func(args)
+    except (ValueError, KeyError, OSError) as exc:   # bad config, missing or malformed data file
+        console.print(f"[red]Error:[/red] {exc}")
+        return 2
+    except KeyboardInterrupt:
+        console.print("[yellow]Interrupted.[/yellow]")
+        return 130
 
 
 if __name__ == "__main__":

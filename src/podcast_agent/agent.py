@@ -28,6 +28,7 @@ from .llm import LLMClient
 from .prompts import SYSTEM_PROMPT, build_user_prompt
 from .schemas import EpisodeReport, RunMetrics
 from .sources import ClientSources
+from .telemetry import Telemetry
 from .tools import TOOL_DEFINITIONS, ToolExecutor, ToolRejected
 
 MAX_NUDGES = 2
@@ -58,13 +59,17 @@ class TraceWriter:
 class PodcastAgent:
     def __init__(self, llm: LLMClient, kb: KnowledgeBase, settings: Settings,
                  logger: logging.Logger | None = None, today: str | None = None,
-                 sources: ClientSources | None = None):
+                 sources: ClientSources | None = None, telemetry: Telemetry | None = None):
         self.llm = llm
+        self.telemetry = telemetry or Telemetry()      # no-op unless OpenTelemetry is switched on
         self.sources = sources or ClientSources()
         self.kb = kb.with_documents(self.sources.pinned_facts)   # pinned client facts are searchable
         self.settings = settings
         self.base_logger = logger or logging.getLogger("podcast_agent")
         self.today = today or date.today().isoformat()
+        # Low-cardinality labels for metrics (episode ids go on spans, never on metrics).
+        self.metric_attrs = {"client": self.sources.client_id, "model": settings.model, "effort": settings.effort}
+        self.telemetry.prewarm(self.metric_attrs, [t["name"] for t in TOOL_DEFINITIONS])
 
     def _tools(self) -> list[dict]:
         tools = list(TOOL_DEFINITIONS)
@@ -73,8 +78,36 @@ class PodcastAgent:
         return tools
 
     def run(self, episode: Episode, trace_path: Path | None = None) -> EpisodeReport:
+        """Process one episode inside a telemetry span (a no-op unless OpenTelemetry is on)."""
+        with self.telemetry.span("podcast_agent.episode", {
+            "episode.id": episode.episode_id, "episode.title": episode.title,
+            "client.id": self.sources.client_id, "source_policy.version": self.sources.version,
+            "gen_ai.request.model": self.settings.model, "effort": self.settings.effort,
+            "web_search": self.settings.enable_web_search,
+            "ingest.lines_dropped": len(episode.ingest_report.get("lines_dropped", [])),
+        }) as span:
+            report = self._run(episode, trace_path)
+            m = report.metrics
+            span.set_attributes({
+                "status": report.status, "turns": m.model_turns, "tool_calls": m.tool_calls,
+                "guardrail_rejections": m.rejected_tool_calls, "web_searches": m.web_searches,
+                "gen_ai.usage.input_tokens": m.input_tokens + m.cache_read_tokens + m.cache_write_tokens,
+                "gen_ai.usage.output_tokens": m.output_tokens, "cost_usd": m.estimated_cost_usd or 0.0,
+                "claims": len(report.fact_checks),
+                "claims.needs_review": sum(f.needs_human_review for f in report.fact_checks),
+            })
+            if report.status != "complete":
+                self.telemetry.mark_error(span, report.error or report.status)
+        self.telemetry.episode(report, self.metric_attrs)
+        return report
+
+    def _run(self, episode: Episode, trace_path: Path | None = None) -> EpisodeReport:
         log = logging.LoggerAdapter(self.base_logger, {"episode": episode.episode_id})
-        trace = TraceWriter(trace_path) if trace_path else None
+        try:
+            trace = TraceWriter(trace_path) if trace_path else None
+        except OSError as exc:   # an unwritable trace must not stop the episode
+            log.warning("  trace file unavailable (%s); continuing without it", exc)
+            trace = None
         executor = ToolExecutor(episode, self.kb, self.sources)
         metrics = RunMetrics(model=self.settings.model, effort=self.settings.effort)
         started = time.monotonic()
@@ -106,9 +139,20 @@ class PodcastAgent:
 
         try:
             for step in range(1, self.settings.max_steps + 1):
-                response = self.llm.create(system=SYSTEM_PROMPT, tools=tools, messages=messages)
+                t0 = time.monotonic()
+                with self.telemetry.span("podcast_agent.turn", {"step": step}) as turn_span:
+                    response = self.llm.create(system=SYSTEM_PROMPT, tools=tools, messages=messages)
+                    took = time.monotonic() - t0
+                    usage = self._usage(response)
+                    turn_span.set_attributes({"stop_reason": str(getattr(response, "stop_reason", "")),
+                                              **{f"gen_ai.usage.{k}_tokens": v for k, v in usage.items()}})
                 metrics.model_turns += 1
-                self._add_usage(metrics, response)
+                metrics.model_seconds = round(metrics.model_seconds + took, 2)
+                metrics.turn_seconds.append(round(took, 2))
+                self._add_usage(metrics, usage)
+                self.telemetry.model_call(took, self.metric_attrs, usage)
+                emit("model_call", step=step, duration_ms=round(took * 1000),
+                     stop_reason=getattr(response, "stop_reason", None), usage=usage)
                 # Append the full content unchanged (thinking blocks included) so the next turn is valid.
                 messages.append({"role": "assistant", "content": response.content})
                 self._log_response(log, emit, step, response, executor)
@@ -164,11 +208,13 @@ class PodcastAgent:
             reviewer_notes=s.reviewer_notes, ingest=episode.ingest_report, metrics=metrics,
             generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         )
-        log.info("■ %s  %s  turns=%d tools=%d rejected=%d searches=%d kb+%d web tokens in/out=%d/%d cost≈$%s %.1fs",
+        log.info("■ %s  %s  turns=%d tools=%d rejected=%d searches=%d kb+%d web tokens in/out=%d/%d cost≈$%s "
+                 "%.1fs (model %.1fs, tools %.2fs, turns %s)",
                  status.upper(), episode.episode_id, metrics.model_turns, metrics.tool_calls,
-                 metrics.rejected_tool_calls, metrics.searches, metrics.web_searches, metrics.input_tokens + metrics.cache_read_tokens
-                 + metrics.cache_write_tokens, metrics.output_tokens, metrics.estimated_cost_usd,
-                 metrics.duration_seconds)
+                 metrics.rejected_tool_calls, metrics.searches, metrics.web_searches,
+                 metrics.input_tokens + metrics.cache_read_tokens + metrics.cache_write_tokens,
+                 metrics.output_tokens, metrics.estimated_cost_usd, metrics.duration_seconds,
+                 metrics.model_seconds, metrics.tool_seconds, metrics.turn_seconds)
         emit("end", status=status, error=error, metrics=metrics.model_dump())
         if trace:
             trace.close()
@@ -177,6 +223,19 @@ class PodcastAgent:
     # ---- helpers -------------------------------------------------------------------------
 
     def _run_tool(self, log, emit, step: int, executor: ToolExecutor, metrics: RunMetrics, tu) -> dict:
+        t0 = time.monotonic()
+        with self.telemetry.span("podcast_agent.tool", {"tool": tu.name, "step": step}) as span:
+            result = self._run_tool_inner(log, emit, step, executor, metrics, tu)
+            took = time.monotonic() - t0
+            outcome = "rejected" if result.get("is_error") else "ok"
+            span.set_attribute("outcome", outcome)
+        metrics.tool_seconds = round(metrics.tool_seconds + took, 3)
+        metrics.tool_seconds_by_name[tu.name] = round(metrics.tool_seconds_by_name.get(tu.name, 0.0) + took, 3)
+        self.telemetry.tool_call(tu.name, took, outcome, self.metric_attrs)
+        emit("tool_timing", step=step, tool=tu.name, duration_ms=round(took * 1000, 1), outcome=outcome)
+        return result
+
+    def _run_tool_inner(self, log, emit, step: int, executor: ToolExecutor, metrics: RunMetrics, tu) -> dict:
         metrics.tool_calls += 1
         args = tu.input if isinstance(tu.input, dict) else {}
         log.info("  🔧 step %d → %s(%s)", step, tu.name, _short(args, 140))
@@ -202,14 +261,19 @@ class PodcastAgent:
                     "content": f"Tool failed with an internal error: {exc!r}", "is_error": True}
 
     @staticmethod
-    def _add_usage(metrics: RunMetrics, response) -> None:
-        usage = getattr(response, "usage", None)
-        if usage is None:
-            return
-        metrics.input_tokens += getattr(usage, "input_tokens", 0) or 0
-        metrics.output_tokens += getattr(usage, "output_tokens", 0) or 0
-        metrics.cache_read_tokens += getattr(usage, "cache_read_input_tokens", 0) or 0
-        metrics.cache_write_tokens += getattr(usage, "cache_creation_input_tokens", 0) or 0
+    def _usage(response) -> dict[str, int]:
+        u = getattr(response, "usage", None)
+        return {"input": getattr(u, "input_tokens", 0) or 0,
+                "output": getattr(u, "output_tokens", 0) or 0,
+                "cache_read": getattr(u, "cache_read_input_tokens", 0) or 0,
+                "cache_write": getattr(u, "cache_creation_input_tokens", 0) or 0}
+
+    @staticmethod
+    def _add_usage(metrics: RunMetrics, usage: dict[str, int]) -> None:
+        metrics.input_tokens += usage["input"]
+        metrics.output_tokens += usage["output"]
+        metrics.cache_read_tokens += usage["cache_read"]
+        metrics.cache_write_tokens += usage["cache_write"]
 
     @staticmethod
     def _log_response(log, emit, step: int, response, executor: ToolExecutor) -> None:

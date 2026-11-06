@@ -16,6 +16,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+otel = [
+    "opentelemetry-sdk>=1.40,<2",
+    "opentelemetry-exporter-otlp-proto-http>=1.40,<2",
+]
 
 [project.scripts]
 podcast-agent = "podcast_agent.cli:main"
