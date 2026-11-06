@@ -18,7 +18,7 @@ with, so any verdict can be traced to the release that produced it. Compare two 
   CI now installs in editable mode, and the project root falls back to the working directory.
 - Release workflow: GHCR image names must be lowercase; the repository owner is now lowercased.
 
-## [0.1.0] - 2026-11-08
+## [0.1.0] - 2026-11-06
 
 First release.
 
