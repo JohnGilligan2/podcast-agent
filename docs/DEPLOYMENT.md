@@ -270,7 +270,7 @@ variant in §1 (ECS Fargate + SQS) is the same design with Fargate tasks in plac
 | Stage | Runs on | Concurrency | Move on when |
 |---|---|---|---|
 | **1. Today** | One container (laptop, VM) | `ThreadPoolExecutor`, `--concurrency` episodes at once (default 3) | More than one machine is needed |
-| **2. Kubernetes workers** | The same image as a Deployment on the platform's cluster (Seekr's cloud, EKS/AKS/GKE/OpenShift, or a client's) | More **pods**, each running N threads; pods pull jobs from a queue | One pod needs hundreds of calls in flight |
+| **2. Kubernetes workers** | The same image as a Deployment on the platform's cluster (your own cloud, EKS/AKS/GKE/OpenShift, or a client's) | More **pods**, each running N threads; pods pull jobs from a queue | One pod needs hundreds of calls in flight |
 | **3. asyncio in the pod** | Same pods | `AsyncAnthropic` + `asyncio.gather`: hundreds of in-flight calls per process | It is a density/cost gain, not a requirement |
 
 ```mermaid

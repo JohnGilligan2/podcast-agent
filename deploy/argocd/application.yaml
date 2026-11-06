@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/JohnGilligan2/seekr-podcast-agent.git
+    repoURL: https://github.com/JohnGilligan2/podcast-agent.git
     targetRevision: main
     path: deploy/helm/podcast-agent
     helm:
