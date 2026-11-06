@@ -1,0 +1,10 @@
+{
+  // Saving must not reformat code: the project's style is enforced by ruff (line length 125) in CI,
+  // and an editor formatter at its 79-character default rewraps unrelated lines into the diff.
+  "[python]": {
+    "editor.formatOnSave": false
+  },
+  "autopep8.args": ["--max-line-length=125"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["-q"]
+}

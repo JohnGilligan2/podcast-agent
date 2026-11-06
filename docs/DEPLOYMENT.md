@@ -452,7 +452,8 @@ flowchart LR
 | Step | What happens | Where |
 |---|---|---|
 | Develop | Work on `develop`, starting at v0.1. Merge to `main` for production through a reviewed pull request | Branch protection |
-| CI on every PR | `ruff`, unit + agent-loop + GUI smoke tests (scripted model, no key), golden-set evaluation; any failure blocks the merge | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
+| CI on every PR | `ruff`, unit + agent-loop + GUI smoke tests (scripted model, no key), and a free check of the golden-set scorer; any failure blocks the merge | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
+| Live golden set, on request | Add the `run-golden` label to a PR (or Actions → ci → Run workflow). It runs the golden episodes on Claude (about $1.20), posts the regression report on the PR, then removes the label so each run is deliberate. Use it for changes to prompts, tools, model, KB or source policies, and before each release | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
 | Release | Tag `v0.2.0` → build the image, push it with that tag, write the tag into the Helm values | [`.github/workflows/release.yml`](../.github/workflows/release.yml) |
 | Deploy | Argo CD watches the chart on `main` and syncs the cluster | [`deploy/argocd/application.yaml`](../deploy/argocd/application.yaml) |
 | Later | A staging environment synced from `develop` before production | — |
@@ -509,8 +510,9 @@ episode on both versions and compare the reports, which shows which verdicts or 
 **Adding a feature:**
 
 1. Branch from `develop`, build the feature, add its tests.
-2. Open a pull request. CI runs the tests and the golden-set regression.
-3. Review the code diff and the regression report, then merge to `develop`.
+2. Open a pull request. CI runs lint and the tests. If the change can affect the agent's answers (prompts,
+   tools, model, KB, source policies), add the `run-golden` label to run the live golden-set regression.
+3. Review the code diff and, when run, the regression report, then merge to `develop`.
 4. Merge `develop` to `main` and tag the release. Argo CD deploys it.
 5. If it breaks, roll back.
 
