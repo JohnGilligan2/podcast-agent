@@ -1,0 +1,194 @@
+{
+  "description": "Curated reference snapshot used as the agent's offline retrieval source (the 'mock search API'). Each entry summarises a public source as of the given date. Entries are deliberately short so the agent must reason about coverage and recency, not just copy text.",
+  "documents": [
+    {
+      "id": "kb-gitlab-all-remote",
+      "title": "GitLab operates as an all-remote company with a public handbook",
+      "source": "GitLab Handbook",
+      "url": "https://handbook.gitlab.com/",
+      "as_of": "2024-06",
+      "tags": ["remote work", "gitlab", "documentation", "handbook", "async"],
+      "content": "GitLab is one of the largest all-remote companies in the world, with team members in more than 60 countries and no company-owned offices. It publishes its company handbook publicly; the handbook runs to thousands of pages and is treated as the single source of truth for how the company operates. GitLab describes a 'handbook-first' approach in which processes are documented before they are communicated, so employees can self-serve answers asynchronously."
+    },
+    {
+      "id": "kb-automattic-distributed",
+      "title": "Automattic has been fully distributed since its founding",
+      "source": "Automattic company pages; press coverage",
+      "url": "https://automattic.com/about/",
+      "as_of": "2024-01",
+      "tags": ["remote work", "automattic", "wordpress", "distributed"],
+      "content": "Automattic, the company behind WordPress.com, WooCommerce and Tumblr, has operated as a distributed company since it was founded in 2005, with employees in dozens of countries. It closed its San Francisco office in 2017 because very few employees used it. Automattic relies heavily on written, asynchronous communication through internal blogs (P2s)."
+    },
+    {
+      "id": "kb-doist-async",
+      "title": "Doist is a remote-first, async-first company",
+      "source": "Doist blog",
+      "url": "https://doist.com/",
+      "as_of": "2023-09",
+      "tags": ["remote work", "doist", "todoist", "async", "communication"],
+      "content": "Doist, the maker of Todoist and the Twist messaging app, is a remote-first company with employees spread across many countries. It has published extensively about 'async-first' communication, arguing that defaulting to written, asynchronous threads instead of real-time chat reduces interruptions and supports deep work across time zones."
+    },
+    {
+      "id": "kb-remote-work-2024-trends",
+      "title": "Hybrid dominates; several large employers tightened office mandates",
+      "source": "Gallup workplace surveys; company announcements",
+      "url": "https://www.gallup.com/401384/indicator-hybrid-work.aspx",
+      "as_of": "2025-01",
+      "tags": ["remote work", "hybrid", "return to office", "trends", "statistics"],
+      "content": "Gallup surveys of US remote-capable employees in 2023-2024 found roughly half working hybrid, a bit under 30% fully remote and about 20% fully on-site. Since 2023 several large employers increased in-office requirements; for example Amazon required corporate employees to return to the office five days a week from January 2025. Fully remote-first companies remain a minority of employers, though remote and hybrid roles continue to attract a disproportionate share of job applications."
+    },
+    {
+      "id": "kb-remote-loneliness",
+      "title": "Loneliness is a commonly reported remote-work struggle",
+      "source": "Buffer, State of Remote Work reports",
+      "url": "https://buffer.com/state-of-remote-work",
+      "as_of": "2023-02",
+      "tags": ["remote work", "loneliness", "wellbeing", "culture"],
+      "content": "Buffer's annual State of Remote Work surveys have repeatedly listed loneliness and staying connected with colleagues among the top struggles reported by remote workers, alongside difficulty unplugging after work. Companies commonly respond with virtual social time, team rituals and periodic in-person retreats."
+    },
+    {
+      "id": "kb-fda-ai-device-list",
+      "title": "FDA list of AI-enabled medical devices",
+      "source": "U.S. FDA, Artificial Intelligence-Enabled Medical Devices list",
+      "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+      "as_of": "2025-07",
+      "tags": ["fda", "ai", "healthcare", "regulation", "radiology", "medical devices"],
+      "content": "The FDA maintains a public list of AI-enabled medical devices authorized for marketing in the United States. The list passed 1,000 devices in 2025. Roughly three quarters of listed devices are in radiology (image analysis, detection and triage). Most reached the market through 510(k) clearance, with smaller numbers via De Novo classification or premarket approval (PMA)."
+    },
+    {
+      "id": "kb-fda-pccp-guidance",
+      "title": "FDA guidance on change control plans for AI-enabled device software",
+      "source": "U.S. FDA final guidance, December 2024",
+      "url": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents",
+      "as_of": "2024-12",
+      "tags": ["fda", "ai", "regulation", "medical devices", "pccp"],
+      "content": "In December 2024 the FDA finalised guidance on Predetermined Change Control Plans (PCCPs) for AI-enabled device software functions. A PCCP lets a manufacturer describe planned model updates in its marketing submission so that those updates can be made later without a new submission, provided they follow the authorised plan. AI devices are reviewed under the same risk-based pathways as other devices."
+    },
+    {
+      "id": "kb-idx-dr-autonomous",
+      "title": "First FDA-authorised autonomous AI diagnostic (IDx-DR, 2018)",
+      "source": "U.S. FDA news release, April 2018",
+      "url": "https://www.fda.gov/news-events/press-announcements/fda-permits-marketing-artificial-intelligence-based-device-detect-certain-diabetes-related-eye-problems",
+      "as_of": "2018-04",
+      "tags": ["fda", "ai", "healthcare", "autonomous", "diagnostics", "ophthalmology"],
+      "content": "In April 2018 the FDA permitted marketing of IDx-DR (now called LumineticsCore) through the De Novo pathway. It was the first AI-based device authorised to provide a screening decision for more-than-mild diabetic retinopathy without a clinician also needing to interpret the image. Autonomous AI therefore already exists for narrow, well-defined tasks, although most authorised AI devices are assistive."
+    },
+    {
+      "id": "kb-radiology-triage-cadt",
+      "title": "AI triage tools flag urgent findings for radiologists",
+      "source": "FDA device listings (CADt category); hospital deployments",
+      "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+      "as_of": "2025-01",
+      "tags": ["ai", "healthcare", "radiology", "x-ray", "triage", "diagnostics"],
+      "content": "FDA-cleared computer-aided triage (CADt) software analyses CT scans and X-rays to flag suspected urgent findings such as intracranial haemorrhage, pulmonary embolism or pneumothorax and moves those studies up the radiologist's worklist. These tools are used in many US hospitals. They are assistive: the radiologist still reads the study and makes the diagnosis."
+    },
+    {
+      "id": "kb-symptom-checkers",
+      "title": "Online symptom checkers and triage chatbots",
+      "source": "Semigran et al., BMJ 2015; vendor and health-system sites",
+      "url": "https://www.bmj.com/content/351/bmj.h3480",
+      "as_of": "2023-01",
+      "tags": ["ai", "healthcare", "chatbot", "triage", "symptom checker", "patients"],
+      "content": "Many health systems and digital-health companies (for example Ada, Buoy Health and K Health) offer online symptom checkers or triage chatbots that suggest an appropriate level of care before a patient sees a clinician. Evaluations have found their accuracy varies widely; a 2015 BMJ study of 23 symptom checkers found they gave appropriate triage advice in about 57% of test cases."
+    },
+    {
+      "id": "kb-algorithmic-bias-obermeyer",
+      "title": "Racial bias in a widely used health-care algorithm (Science, 2019)",
+      "source": "Obermeyer et al., Science 366(6464), 2019",
+      "url": "https://www.science.org/doi/10.1126/science.aax2342",
+      "as_of": "2019-10",
+      "tags": ["ai", "healthcare", "bias", "data", "equity"],
+      "content": "Obermeyer and colleagues showed that a commercial algorithm used to allocate extra care to patients used past health-care costs as a proxy for need. Because less money had historically been spent on Black patients with the same level of need, the algorithm substantially under-identified Black patients for extra care; correcting the label would have more than doubled the share of Black patients flagged. The study is widely cited as evidence that models trained on historical clinical data can encode bias."
+    },
+    {
+      "id": "kb-hipaa-ai",
+      "title": "HIPAA applies to AI tools that handle protected health information",
+      "source": "U.S. HHS, HIPAA Privacy and Security Rules",
+      "url": "https://www.hhs.gov/hipaa/index.html",
+      "as_of": "2024-01",
+      "tags": ["healthcare", "privacy", "hipaa", "data", "ai", "regulation"],
+      "content": "The HIPAA Privacy and Security Rules govern how covered entities and their business associates use and protect patient health information. An AI vendor that processes protected health information on behalf of a hospital is generally a business associate and must sign a business associate agreement (BAA). Data privacy obligations are a major consideration when deploying clinical AI."
+    },
+    {
+      "id": "kb-pandemic-telehealth",
+      "title": "COVID-19 accelerated telehealth and digital-health adoption",
+      "source": "McKinsey & Company, 'Telehealth: a quarter-trillion-dollar post-COVID-19 reality?', 2021",
+      "url": "https://www.mckinsey.com/industries/healthcare/our-insights/telehealth-a-quarter-trillion-dollar-post-covid-19-reality",
+      "as_of": "2021-07",
+      "tags": ["healthcare", "pandemic", "covid-19", "telehealth", "digital health", "adoption"],
+      "content": "During the COVID-19 pandemic, temporary regulatory waivers and patient demand drove a rapid shift to virtual care. McKinsey estimated in 2021 that telehealth use had stabilised at levels about 38 times higher than before the pandemic. Investment in digital-health tools, including AI, rose sharply over the same period."
+    },
+    {
+      "id": "kb-interoperability-cures-act",
+      "title": "Interoperability rules: 21st Century Cures Act and FHIR APIs",
+      "source": "ONC Cures Act Final Rule, 2020",
+      "url": "https://www.healthit.gov/topic/oncs-cures-act-final-rule",
+      "as_of": "2023-01",
+      "tags": ["healthcare", "interoperability", "fhir", "regulation", "data"],
+      "content": "The 21st Century Cures Act (2016) and the ONC Cures Act Final Rule (2020) prohibit 'information blocking' and require certified electronic health record systems to offer standardised HL7 FHIR APIs. Poor interoperability between health IT systems is widely cited as a barrier to deploying AI across care settings."
+    },
+    {
+      "id": "kb-ambient-ai-scribes",
+      "title": "Clinical AI copilots: ambient scribes and decision support",
+      "source": "Vendor announcements and health-system reports, 2023-2025",
+      "url": "https://www.nuance.com/healthcare/dragon-ai-clinical-solutions.html",
+      "as_of": "2025-03",
+      "tags": ["ai", "healthcare", "copilot", "clinical decision support", "future"],
+      "content": "Between 2023 and 2025 many US health systems deployed ambient AI 'scribes' (for example Microsoft/Nuance DAX Copilot and Abridge) that draft clinical notes from patient conversations for clinician review. AI tools that suggest diagnoses or treatment plans exist as clinical decision support, but clinicians remain responsible for the final decision."
+    },
+    {
+      "id": "kb-mailchimp-bootstrapped",
+      "title": "Mailchimp: bootstrapped to a $12 billion acquisition",
+      "source": "Intuit press release, September 2021",
+      "url": "https://investors.intuit.com/news-events/press-releases/detail/1013/intuit-to-acquire-mailchimp",
+      "as_of": "2021-09",
+      "tags": ["bootstrapping", "startups", "saas", "acquisition", "funding"],
+      "content": "Mailchimp grew for two decades without venture capital and was acquired by Intuit in 2021 for approximately $12 billion in cash and stock. It is frequently cited as the leading example of a bootstrapped software company reaching very large scale while founders kept full ownership."
+    },
+    {
+      "id": "kb-seed-dilution",
+      "title": "Typical founder dilution in a seed round",
+      "source": "Carta, State of Private Markets reports",
+      "url": "https://carta.com/data/",
+      "as_of": "2024-06",
+      "tags": ["venture capital", "fundraising", "seed", "dilution", "startups"],
+      "content": "Founders typically sell roughly 15-25% of their company in a priced seed round; Carta data has put median seed-round dilution at around 20%. Each subsequent round dilutes founders further, and investors usually receive board seats or protective provisions that reduce founder control."
+    },
+    {
+      "id": "kb-vc-fund-horizon",
+      "title": "VC fund lifecycles create pressure for exits",
+      "source": "Standard limited-partnership fund terms; NVCA",
+      "url": "https://nvca.org/",
+      "as_of": "2024-01",
+      "tags": ["venture capital", "exits", "fund life", "fundraising"],
+      "content": "Venture capital funds are usually structured with a ten-year life (often with short extensions), after which capital must be returned to limited partners. This creates pressure on portfolio companies to reach a liquidity event such as an acquisition or IPO within that horizon, and pushes VCs to favour companies capable of very large outcomes."
+    },
+    {
+      "id": "kb-vc-share-of-startups",
+      "title": "Only a small fraction of new businesses raise venture capital",
+      "source": "Kauffman Foundation research; U.S. Census Business Formation Statistics",
+      "url": "https://www.kauffman.org/",
+      "as_of": "2023-01",
+      "tags": ["venture capital", "bootstrapping", "startups", "statistics", "funding"],
+      "content": "Well under 1% of new US businesses ever raise venture capital; most are funded by founders' savings, revenue, loans or friends and family. Bootstrapping is therefore the default path for the vast majority of companies, even though venture-backed companies receive most media attention."
+    },
+    {
+      "id": "kb-business-survival-bls",
+      "title": "New business survival rates (BLS)",
+      "source": "U.S. Bureau of Labor Statistics, Business Employment Dynamics",
+      "url": "https://www.bls.gov/bdm/bdm_chart3.htm",
+      "as_of": "2024-01",
+      "tags": ["startups", "survival", "statistics", "small business"],
+      "content": "BLS Business Employment Dynamics data show that roughly 20% of new US private-sector establishments close within their first year and about half within five years, a pattern that has been fairly stable across decades."
+    },
+    {
+      "id": "kb-nasa-mars-sample-return",
+      "title": "NASA Mars Sample Return timeline under review",
+      "source": "NASA announcement, January 2025; FY2026 budget request",
+      "url": "https://www.nasa.gov/news-release/nasa-to-explore-two-landing-options-for-returning-samples-from-mars/",
+      "as_of": "2025-06",
+      "tags": ["nasa", "mars", "space", "sample return"],
+      "content": "In January 2025 NASA said it would choose in 2026 between two lower-cost architectures for Mars Sample Return, with samples returning to Earth no earlier than the 2035-2039 timeframe. The administration's FY2026 budget request proposed cancelling the programme. No Mars sample-return launch was scheduled for early 2026."
+    }
+  ]
+}

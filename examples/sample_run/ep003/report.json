@@ -1,0 +1,208 @@
+{
+  "episode_id": "ep003",
+  "title": "Bootstrapping vs Fundraising — Which Path Wins?",
+  "host": "Lena Torres",
+  "guests": [
+    "Samir Gupta",
+    "Emily Rogers"
+  ],
+  "source_file": "ep003_bootstrapping.json",
+  "client_id": "default",
+  "source_policy_version": "b46f0e416d7b",
+  "status": "complete",
+  "error": null,
+  "plan": [
+    {
+      "step": 1,
+      "action": "Draft and submit summary",
+      "tool": "submit_summary",
+      "rationale": "Core deliverable"
+    },
+    {
+      "step": 2,
+      "action": "Submit key notes with verbatim quotes",
+      "tool": "submit_key_notes",
+      "rationale": "Show notes"
+    },
+    {
+      "step": 3,
+      "action": "Register claims (mostly anecdotes and general business claims)",
+      "tool": "register_claims",
+      "rationale": "Fact-check"
+    },
+    {
+      "step": 4,
+      "action": "Search KB and web for evidence",
+      "tool": "search_knowledge_base / web_search",
+      "rationale": "Evidence"
+    },
+    {
+      "step": 5,
+      "action": "Record verdicts and finish",
+      "tool": "record_verdict / finish",
+      "rationale": "Complete report"
+    }
+  ],
+  "summary": {
+    "text": "In this episode of Founder Debates, host Lena Torres moderates a discussion on whether founders are better served by bootstrapping or by raising venture capital. Her two guests take opposing sides: Samir Gupta, who has bootstrapped companies from scratch, and Emily Rogers, who has raised multiple funding rounds.\n\nSamir argues that bootstrapping is still relevant because it forces discipline. Founders have to focus on revenue and profitability early, and they are not distracted by chasing the metrics venture investors care about. Emily responds that in time-sensitive markets, venture money can help a company capture the opportunity before competitors do.\n\nAsked for concrete examples, Samir describes building a SaaS business with no outside capital that reached break-even in 18 months while he kept total control. Emily cites a fintech startup she advised that raised a seed round to scale quickly and reached market leadership within two years.\n\nThe guests then outline a decision framework. Samir recommends bootstrapping when a market is niche, defensible and generates revenue early. Emily recommends raising when the space is fast-moving and competitive, or when the company needs talent or product scale quickly. On trade-offs, Samir says bootstrapping means slower growth but full control and less risk from investors. Emily says venture capital brings faster growth and resources, but at the cost of diluted control and possible pressure for a quick exit.\n\nLena closes by concluding that the best path depends heavily on the type of market and on the founder's priorities. Neither model is presented as universally superior. The episode makes no statistical or regulatory claims; its evidence consists of the guests' personal anecdotes.",
+    "word_count": 268,
+    "core_themes": [
+      "Bootstrapping vs venture capital",
+      "Control versus growth speed",
+      "Matching funding strategy to market type"
+    ],
+    "key_discussions": [
+      "Bootstrapping as a source of discipline and early focus on revenue",
+      "VC for capturing time-sensitive, competitive markets",
+      "Anecdotes: a bootstrapped SaaS that broke even in 18 months vs a seed-funded fintech that reached market leadership in two years",
+      "Trade-offs: dilution and exit pressure vs slower growth"
+    ],
+    "outcomes": [
+      "Bootstrap if the market is niche, defensible and generates revenue early",
+      "Raise if the space is fast-moving, competitive and needs scale or talent quickly",
+      "The best path depends on market type and founder priorities"
+    ]
+  },
+  "key_notes": {
+    "takeaways": [
+      "Assess your market first: niche, defensible markets that generate revenue early suit bootstrapping.",
+      "In fast-moving, competitive spaces, outside capital can help you capture the market before rivals do.",
+      "Bootstrapping keeps you focused on revenue and profitability rather than VC metrics.",
+      "Raising VC means diluting control and possibly facing pressure for a quick exit.",
+      "Choose a funding path based on your own priorities: control and lower investor risk versus speed and resources."
+    ],
+    "quotes": [
+      {
+        "timestamp": "00:01:05",
+        "speaker": "Samir Gupta",
+        "quote": "Bootstrapping forces discipline. You focus on revenue and profitability early.",
+        "why_notable": "Core argument for bootstrapping",
+        "raw_line": "Bootstrapping forces discipline. You focus on revenue and profitability early. No distractions from chasing VC metrics."
+      },
+      {
+        "timestamp": "00:01:30",
+        "speaker": "Emily Rogers",
+        "quote": "if your market is time-sensitive, VC money helps capture it before competitors.",
+        "why_notable": "Core argument for VC",
+        "raw_line": "True, but if your market is time-sensitive, VC money helps capture it before competitors."
+      },
+      {
+        "timestamp": "00:04:40",
+        "speaker": "Emily Rogers",
+        "quote": "VC: faster growth, resources, but you dilute control and may face pressure for quick exits.",
+        "why_notable": "Candid summary of VC trade-offs",
+        "raw_line": "VC: faster growth, resources, but you dilute control and may face pressure for quick exits."
+      },
+      {
+        "timestamp": "00:05:10",
+        "speaker": "Lena Torres",
+        "quote": "It seems the best path depends heavily on market type and founder priorities.",
+        "why_notable": "Episode conclusion",
+        "raw_line": "Thanks both. It seems the best path depends heavily on market type and founder priorities."
+      }
+    ],
+    "topics": [
+      "bootstrapping",
+      "venture-capital",
+      "startup-funding",
+      "saas",
+      "fintech",
+      "founder-strategy"
+    ]
+  },
+  "fact_checks": [
+    {
+      "claim_id": "C1",
+      "claim": "Samir built a SaaS with no outside capital that reached break-even in 18 months.",
+      "speaker": "Samir Gupta",
+      "timestamp": "00:02:10",
+      "claim_type": "anecdote",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "Personal anecdote; the company is not named and no source addresses it.",
+      "evidence": [],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C2",
+      "claim": "A fintech startup Emily advised raised a seed round and secured market leadership within two years.",
+      "speaker": "Emily Rogers",
+      "timestamp": "00:02:35",
+      "claim_type": "anecdote",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "Anecdote about an unnamed fintech startup; \"market leadership\" is not defined or testable.",
+      "evidence": [],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Raising VC dilutes founder control and can bring pressure for quick exits.",
+      "speaker": "Emily Rogers",
+      "timestamp": "00:04:40",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.85,
+      "rationale": "Reference KB: seed rounds typically dilute founders by about 20%, and investors gain board seats or protective provisions that reduce founder control. A VC fund's ten-year life creates pressure on portfolio companies to reach a liquidity event.",
+      "evidence": [
+        {
+          "source_id": "kb-seed-dilution",
+          "title": "Typical founder dilution in a seed round",
+          "url": "https://carta.com/data/",
+          "as_of": "2024-06",
+          "tier": "reference"
+        },
+        {
+          "source_id": "kb-vc-fund-horizon",
+          "title": "VC fund lifecycles create pressure for exits",
+          "url": "https://nvca.org/",
+          "as_of": "2024-01",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    }
+  ],
+  "reviewer_notes": [
+    "The episode's evidence is mostly personal anecdote: Samir's SaaS break-even in 18 months (C1) and Emily's advised fintech (C2) are both unnamed and unverifiable. Consider asking the guests for names before publishing any implied endorsement.",
+    "C3 (VC dilution and exit pressure) was verified against reference KB entries only; the web search call failed on a parsing error and no web sources were retrieved.",
+    "Speaker labels look consistent; no obvious transcription errors.",
+    "The 'market leadership within two years' claim is vague; if it is promoted in show notes, it should carry the caveat that it is the guest's characterisation."
+  ],
+  "ingest": {
+    "lines_parsed": 16,
+    "lines_kept": 16,
+    "lines_cleaned": 1,
+    "lines_flagged": 0,
+    "lines_dropped": [],
+    "speakers_mapped": {
+      "Lena": "Lena Torres",
+      "Samir": "Samir Gupta",
+      "Emily": "Emily Rogers"
+    },
+    "flags": []
+  },
+  "metrics": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "model_turns": 4,
+    "tool_calls": 9,
+    "rejected_tool_calls": 0,
+    "searches": 1,
+    "web_searches": 1,
+    "blocked_results_dropped": 0,
+    "input_tokens": 10,
+    "output_tokens": 3244,
+    "cache_read_tokens": 36283,
+    "cache_write_tokens": 14875,
+    "estimated_cost_usd": 0.1538,
+    "duration_seconds": 35.8
+  },
+  "generated_at": "2026-11-06T01:14:42+00:00"
+}

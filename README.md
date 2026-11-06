@@ -1,0 +1,296 @@
+# Podcast Agent — summarise, extract show notes, fact-check
+
+An agentic system that turns raw podcast transcripts into publish-ready show notes and a
+fact-check report for an ad agency's content team. Built on Claude (`claude-opus-5-5`) with a
+plain-Python tool loop — no agent framework — so every step is easy to read and change.
+
+Claims are verified with **live web search steered by a per-client source policy**: each agency
+client agrees which domains it trusts, which it blocks, and a few pinned facts of its own. A
+curated local knowledge base keeps the agent working offline and in tests.
+
+| Deliverable | Where |
+|---|---|
+| Source code (containerised) | [`src/podcast_agent/`](src/podcast_agent), [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml) |
+| Sample outputs (JSON + Markdown) | [`examples/sample_run/`](examples/sample_run) — start at [`index.md`](examples/sample_run/index.md) |
+| Agent reasoning logs | [`examples/sample_run/run.log`](examples/sample_run/run.log) and per-episode `trace.jsonl` |
+| Deployment strategy (diagram + narrative) | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Client source policies | [`data/clients/`](data/clients) |
+
+---
+
+## Quick start
+
+### With Docker (recommended)
+
+```bash
+cp .env.example .env          # then put your ANTHROPIC_API_KEY in .env
+docker compose run --rm agent # processes every file in data/transcripts
+```
+
+One Anthropic API key covers both Claude and web search; no other key is needed. Reports appear
+in `./output/`. Other commands:
+
+```bash
+docker compose run --rm agent run data/transcripts/ep002_ai_healthcare.json -v   # one episode
+docker compose run --rm agent run --client example_healthtech                   # another client's policy
+docker compose run --rm agent run --no-web-search                               # offline: pinned facts + local KB
+docker compose run --rm agent sources --client example_healthtech               # show a client's policy
+docker compose run --rm agent kb-search "FDA autonomous AI"                     # query the local KB
+docker compose --profile test run --rm tests                                    # unit tests (no API key needed)
+```
+
+### Without Docker (Python 3.11+)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+python -m podcast_agent run        # same CLI as above
+pytest -q
+```
+
+### CLI options
+
+| Flag | Default | Purpose |
+|---|---|---|
+| `inputs…` | `data/transcripts` | Transcript files or folders (`.json` or `.txt`) |
+| `--client` | `default` | Source policy: an id under `data/clients/` or a path to a JSON file |
+| `--web-search` / `--no-web-search` | on | Live web search; `--no-web-search` is offline mode (pinned facts + local KB only) |
+| `--out` | `output` | Output folder |
+| `--model` | `claude-opus-5-5` | Any Claude model id |
+| `--effort` | `medium` | `low` … `max` reasoning effort |
+| `--concurrency` | `3` | Episodes processed in parallel |
+| `--max-steps` | `25` | Model turns per episode before giving up |
+| `-v` | off | Debug logging |
+
+Every option can also be set in `.env` (see [`.env.example`](.env.example)).
+
+---
+
+## How it works
+
+```mermaid
+flowchart LR
+    T["Transcript<br/>.json / .txt"] --> I["Ingest<br/>timestamps → HH:MM:SS<br/>filler words removed<br/>speakers resolved"]
+    I --> A
+
+    subgraph A["Agent loop (agent.py)"]
+        direction TB
+        M["Claude<br/>plans & chooses tools"] -- tool_use --> X["ToolExecutor<br/>(tools.py)"]
+        X -- "tool_result<br/>or is_error + reason" --> M
+    end
+
+    P[["Client source policy<br/>trusted · blocked · pinned<br/>(sources.py)"]] --> X
+    P --> W
+    X --> G{{"Guardrails<br/>200–300 words · exactly 5 takeaways<br/>quotes verbatim at that timestamp<br/>evidence = retrieved this run, never blocked<br/>untrusted-only evidence ≤ 0.6 + human review<br/>finish only when complete"}}
+    X --> KB[("Pinned facts + curated KB<br/>BM25")]
+    M -. "allowed / blocked domains" .-> W["Web search<br/>(server tool)"]
+    A --> O["report.json · report.md<br/>trace.jsonl · run.log"]
+```
+
+**The model decides how to do the work; code decides what counts as done.**
+
+1. **Plan.** The agent's first call is `create_plan`; the plan is logged and saved in the report.
+2. **Act.** Claude calls tools to submit the summary and key notes, register check-worthy
+   claims, search for evidence (several searches in one turn when it can), and record a verdict
+   per claim. It picks the order and the search queries itself.
+3. **Validate.** Each tool checks its input. A failed check goes back to Claude as an
+   `is_error` result with the reason (e.g. *"quote at 00:02:45 is not verbatim. The line reads: …"*),
+   and Claude corrects itself and resubmits.
+4. **Finish.** `finish` is rejected until every deliverable exists and every claim has a verdict.
+   If the step budget runs out, the report is still written, marked `incomplete`, with what is missing.
+
+### Tools
+
+| Tool | What it does | Guardrail |
+|---|---|---|
+| `create_plan` | Records the agent's plan | Must have steps |
+| `submit_summary` | Summary + themes / discussions / outcomes | 200–300 words; ≥ 2 themes |
+| `submit_key_notes` | 5 takeaways, 2–5 quotes, 3–8 tags | Each quote must appear **verbatim** in the line at its timestamp, by that speaker; tags normalised to `kebab-case` |
+| `register_claims` | Lists check-worthy claims, assigns ids | Timestamp must exist; speaker taken from the transcript |
+| `search_knowledge_base` | BM25 over the client's pinned facts and the curated KB | Every returned source joins the provenance whitelist, with its tier |
+| `web_search` | Anthropic server tool, sent the client's allow list or block list | Blocked-domain results are dropped in code and can never be cited |
+| `record_verdict` | Verdict + confidence + rationale + evidence + review flag | Evidence must come from **this run's** searches; `verified` needs ≥ 1 source; no-evidence verdicts ≤ 0.7; untrusted-only evidence ≤ 0.6 and flagged for review |
+| `finish` | Reviewer notes for the human editor | Blocked until everything is complete |
+
+---
+
+## Trusted sources: a per-client source policy
+
+A knowledge base of stored facts goes stale, and in this demo its entries were written from the
+model's own knowledge, so it is hard to defend as evidence. In real use **the agency decides which
+sources it trusts**, and that is agreed with each client up front. So the KB became a policy:
+
+```json
+// data/clients/<client>.json (abridged)
+{
+  "client_id": "example_healthtech",
+  "search_mode": "trusted_only",                 // or "prefer_trusted"
+  "trusted_domains": [{"domain": "fda.gov", "topics": ["medical", "regulation"]}, …],
+  "blocked_domains": [{"domain": "reddit.com", "reason": "user-generated"}, …],
+  "pinned_facts":   [{"id": "pin-northwind-triage-status", "content": "…", "as_of": "2026-09"}]
+}
+```
+
+| Evidence tier | Where it comes from | Effect |
+|---|---|---|
+| 📌 `pinned` | Client-supplied fact, not on the public web (e.g. its own product claims) | Trusted; checked first for client-specific claims |
+| 📚 `reference` | Curated local KB ([`data/knowledge_base.json`](data/knowledge_base.json)) | Trusted; the offline/test stand-in for the agreed source list |
+| 🛡️ `trusted_web` | Live result on a trusted domain (subdomains count) | Trusted; full confidence |
+| 🌐 `other_web` | Live result anywhere else | If it is the only support: confidence ≤ 0.6 and **flagged for human review** |
+| ⛔ blocked | Live result on a blocked domain | Never enters the whitelist, so it can never be cited |
+
+- **`prefer_trusted`** sends the API's `blocked_domains` list and searches the open web; **`trusted_only`**
+  sends `allowed_domains`. The API takes one list or the other, never both, so blocked domains are
+  also enforced in code either way.
+- **Conflicts go to a person.** When a pinned fact and a live result disagree, the agent sets
+  `needs_human_review` with a reason; code requires the reason.
+- **The agent never edits its own sources.** A transcript is untrusted input and could try to talk
+  the model into trusting a domain. Policies change only through an admin path outside the run, and
+  each report records the policy version (a hash) it was produced under.
+- `python -m podcast_agent sources --client <id>` prints a policy and the exact web-search tool
+  configuration sent to the API.
+
+### Fact-check verdicts
+
+| Verdict | Meaning |
+|---|---|
+| ✅ Verified true | A retrieved source supports the claim |
+| ⚠️ Possibly outdated/inaccurate | A retrieved source contradicts it, dates it, or shows it overstates the facts |
+| ❓ Unverifiable | Nothing retrieved addresses it, or it is a prediction, anecdote, or too vague to test |
+
+**Confidence** is the agent's confidence in its *verdict* given the evidence (high when a trusted
+source directly settles it; ~0.3–0.6 for unverifiable claims). The agent is given today's date so it
+can flag claims that have aged (e.g. ep001's "predictions for 2025").
+
+---
+
+## What runs in parallel
+
+```mermaid
+flowchart LR
+    CLI["CLI: N transcripts"] --> POOL["ThreadPoolExecutor<br/>--concurrency (default 3)"]
+    POOL --> EA
+    POOL --> EB["episode B<br/>(same loop)"]
+    POOL --> EC["episode C<br/>(same loop)"]
+    subgraph EA["episode A: turns run in order"]
+        direction TB
+        t1["turn 1: plan + summary + notes + claims"] --> t2["turn 2: several searches at once"] --> t3["turn 3: verdicts + finish"]
+    end
+    EA --> IDX["index.md · all_reports.json<br/>(collected with as_completed)"]
+    EB --> IDX
+    EC --> IDX
+```
+
+- **Across episodes:** threads, because the work is almost all waiting on the network (Claude and
+  search). Three ~45 s episodes finish in roughly the time of the slowest one instead of the sum.
+  Results are collected with `as_completed`; one failed episode is logged and never stops the others.
+- **Within one episode:** Claude batches independent tool calls in one turn (several searches, many
+  verdicts), and all results go back in one message.
+- **What stays sequential:** the turns of one episode, because each depends on the last.
+- **Why not asyncio:** threads give the same speed-up here with ordinary functions. In production,
+  scale comes from a queue and more worker containers (see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)).
+
+---
+
+## Input cleaning
+
+Any reasonable transcript loads into the same clean model — timestamp, speaker, text
+([`ingest.py`](src/podcast_agent/ingest.py)). Every line keeps **both** `raw_text` (exactly as in the
+file, never modified) and `clean_text` (what Claude reads, quotes and counts). Nothing that changes
+meaning is rewritten: only filler is removed, and the original is kept.
+
+| Case | Example ([`ep900_messy.txt`](data/samples/ep900_messy.txt)) | Rule |
+|---|---|---|
+| Timestamp formats | `0:00`, `00:12`, `1:05`, `00:02:30.500`, with or without brackets | Normalised to `HH:MM:SS` |
+| Missing timestamp | `Jordan: Thanks everyone…` | Inherits the previous timestamp; line flagged |
+| Duplicate timestamps | two lines at `02:10` | Both kept in order; quote checks try every line at that time |
+| Separators | `Jordan:` and `00:31 Tom - …` | Colon or spaced dash |
+| Speaker variants | `JORDAN`, `Dr. Okafor`, `Maya` | Mapped to header names by first name, surname or title; unknown speakers kept and flagged |
+| Header | `Title:` / `Host:` / `Guests:` lines | Parsed if present; else filename as title and speakers found as guests |
+| Pure filler | *um, uh, er, hmm* | Removed (`"to, uh, Retail"` → `"to Retail"`) |
+| Context filler | *like, you know, I mean, so* | Removed only when used as filler: `"So, like, Amazon's"` → `"Amazon's"`, but `"I like the momentum"` is kept |
+| Stutters | `I I think`, `the, the` | Collapsed |
+| Stage directions | `[crosstalk]` | Removed and noted |
+| Filler-only line | `Um. Uh. Yeah.` | Dropped and logged |
+| Curly quotes, dashes | `it’s`, `—` | Plain ASCII before quote matching |
+| Transcription errors | `async yo`, `F.T.C.` | Not auto-corrected; Claude reads through them and flags them for the editor |
+
+Each report includes a *Transcript cleaning* section (lines parsed, kept, cleaned, dropped, flagged,
+and the speaker map), and quotes show the original line for audit. The 200–300 word limit applies to
+Claude's summary, counted in code, so filler can never pad it. The filler lists are constants at the
+top of `ingest.py`, so adding a word is a one-line change.
+
+---
+
+## Outputs
+
+For each episode, `output/<episode_id>/` contains:
+
+| File | Contents |
+|---|---|
+| `report.md` | Human-readable show notes: summary, takeaways, quotes, tags, fact-check table (with evidence tiers and review flags), reviewer notes, plan |
+| `report.json` | The same as structured data ([`schemas.py`](src/podcast_agent/schemas.py)) plus client, policy version and run metrics (tokens, cost, turns, rejected calls, KB and web searches) |
+| `trace.jsonl` | Every event: reasoning summaries, tool calls with full inputs, tool results, web results, errors |
+
+Plus `output/index.md` (run overview), `output/all_reports.json`, and `output/run.log`.
+
+---
+
+## Design decisions
+
+| Decision | Why | Alternative considered |
+|---|---|---|
+| Plain tool loop over the Anthropic SDK | ~200 lines, nothing hidden, easy to modify live | LangGraph: more structure, but more abstraction to defend |
+| Deliverables submitted **through tools** | Structured, validated output at each step; failures are fed back, not silently accepted | One big JSON response: no chance to self-correct a single bad quote |
+| Validation in code, not in the prompt | The model can't talk its way past a word count, a fabricated quote or a blocked source | Asking the model to self-check: cheaper, not reliable |
+| Provenance whitelist for evidence | A verdict can only cite something the agent actually retrieved in this run | Trusting cited sources: invites invented citations |
+| Per-client trusted / blocked / pinned sources | The customer controls what counts as evidence; fresher than stored facts while staying explainable | A static KB: goes stale, and nobody agreed to it |
+| Local BM25 knowledge base kept | Offline and test mode; keeps a live demo running if search is unavailable | Removing it: no fallback |
+| Claude Opus 5.5, effort `medium`, adaptive thinking (summarised) | Strong judgement on nuanced claims; summarised thinking makes the logs show *why* | Cheaper models per step: see cost levers in DEPLOYMENT.md |
+| Prompt caching on | The conversation is re-sent each turn; caching cuts that cost ~90% | — |
+| Server-side refusal fallback on | If a safety classifier declines, the request is retried on a fallback model instead of failing | Set `PODCAST_AGENT_REFUSAL_FALLBACK=false` to disable |
+| Transcript treated as untrusted data | Prompt injection inside a transcript can't trigger side effects or change the source policy; tools only write to the report | — |
+
+---
+
+## Project layout
+
+```text
+src/podcast_agent/
+  agent.py           agent loop, logging, metrics, trace
+  tools.py           tool schemas + guardrails (ToolExecutor)
+  sources.py         per-client source policy: tiers, allow/block lists, pinned facts
+  prompts.py         system prompt and per-episode prompt
+  llm.py             Anthropic client wrapper (the only provider-specific file)
+  ingest.py          .json / .txt loading and cleaning
+  knowledge_base.py  BM25 retrieval (pinned facts + curated KB)
+  schemas.py         pydantic output model
+  render.py          report.md / index.md writers
+  cli.py             command line (run, sources, kb-search)
+data/
+  transcripts/       the three provided episodes
+  samples/           a messy .txt transcript in the format from the brief
+  clients/           source policies: default.json, example_healthtech.json
+  knowledge_base.json curated reference sources (with as_of dates)
+tests/               unit tests + scripted end-to-end loop test (no API key needed)
+docs/DEPLOYMENT.md   production deployment strategy
+examples/sample_run/ committed outputs from a real run
+```
+
+## Extending it
+
+- **New client** → add `data/clients/<id>.json`; run with `--client <id>`.
+- **New check or deliverable** → add a tool definition and handler in `tools.py`, mention it in `prompts.py`.
+- **New offline knowledge** → add entries to `data/knowledge_base.json` (keep `as_of` accurate).
+- **Different provider** → change `llm.py` only (e.g. `AnthropicBedrockMantle` for Claude on Bedrock).
+- **Audio input** → add a transcription step in front of `ingest.py`.
+
+## Limitations
+
+- The local knowledge base is a small snapshot written from the model's knowledge of public sources,
+  not fetched live. It is the offline fallback; live web search is the main evidence path.
+- The demo client lists are examples. Real lists are agreed with each agency at onboarding.
+- Light transcript cleaning means quotes are lightly edited, as is normal for show notes; `raw_text`
+  is preserved in memory for auditing.
+- Very long episodes (multiple hours) fit in context but would benefit from segment summaries first.

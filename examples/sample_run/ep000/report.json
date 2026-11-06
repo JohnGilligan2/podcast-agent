@@ -1,0 +1,229 @@
+{
+  "episode_id": "ep000",
+  "title": "Space Weekly - Mars Update",
+  "host": "Host",
+  "guests": [
+    "Guest"
+  ],
+  "source_file": "ep000_mars_sample.txt",
+  "client_id": "default",
+  "source_policy_version": "b46f0e416d7b",
+  "status": "complete",
+  "error": null,
+  "plan": [
+    {
+      "step": 1,
+      "action": "Draft summary and key notes from the short transcript",
+      "tool": "submit_summary / submit_key_notes",
+      "rationale": "Core deliverables"
+    },
+    {
+      "step": 2,
+      "action": "Register claims: NASA Mars mission announcement, early-2026 sample return launch, Perseverance sample collection",
+      "tool": "register_claims",
+      "rationale": "Fact-check inputs"
+    },
+    {
+      "step": 3,
+      "action": "Search KB then web (prefer nasa.gov/esa.int) for Mars Sample Return status and Perseverance samples",
+      "tool": "search_knowledge_base / web_search",
+      "rationale": "Evidence"
+    },
+    {
+      "step": 4,
+      "action": "Record verdicts and finish with reviewer notes",
+      "tool": "record_verdict / finish",
+      "rationale": "Complete episode"
+    }
+  ],
+  "summary": {
+    "text": "This excerpt of Space Weekly's \"Mars Update\" episode is a short exchange between the Host and the Guest about NASA's plans to bring rock and soil samples back from Mars. The transcript has only four lines, running from about the two-minute mark to just past three minutes. That limits how much of the discussion can be summarized, so this overview sticks to what is actually said.\n\nThe Host opens by saying NASA recently announced something about a new Mars mission. The Guest identifies it as a sample-return effort, saying the mission is launching in early 2026 and is intended to bring Martian samples back to Earth. The Host calls the news exciting. The Guest then adds that NASA's Perseverance rover has already collected the samples the mission would bring home. This links the planned return flight to work already done on the Martian surface.\n\nThe core themes are Mars exploration, sample return as a scientific goal, and Perseverance's role in gathering material for later study on Earth. The tone is upbeat. Neither speaker raises costs, schedule risk, or the politics of funding. The main outcome is the speakers' shared enthusiasm and the Guest's view that the hardest groundwork, collecting the samples, is already finished.\n\nListeners should know that the timeline given in the episode does not match the public record as of November 2026. NASA's Mars Sample Return program did not launch in early 2026. Its schedule had already slipped into the 2030s, and US budget decisions around January 2026 effectively cancelled it. The Guest's point about Perseverance holds up: NASA reports that the rover has filled dozens of sample tubes. Whether those samples ever reach Earth now depends on future missions, possibly from other countries or commercial partners.",
+    "word_count": 289,
+    "core_themes": [
+      "NASA Mars exploration",
+      "Mars sample return",
+      "Perseverance rover sample collection"
+    ],
+    "key_discussions": [
+      "Host raises a recent NASA announcement about a new Mars mission",
+      "Guest says the mission launches in early 2026 to return samples",
+      "Guest notes Perseverance has already collected the samples"
+    ],
+    "outcomes": [
+      "Both speakers are enthusiastic about returning Mars samples",
+      "Guest's early-2026 launch timeline is out of date; Mars Sample Return was effectively cancelled",
+      "Perseverance's sample collection is confirmed by NASA"
+    ]
+  },
+  "key_notes": {
+    "takeaways": [
+      "NASA's Perseverance rover has collected dozens of Martian samples in sealed tubes that are waiting to be retrieved.",
+      "The episode's early-2026 launch date for Mars sample return is out of date: no such launch happened.",
+      "US budget decisions around January 2026 effectively cancelled NASA's Mars Sample Return program.",
+      "Check mission dates against nasa.gov, because space mission schedules often slip or get cancelled.",
+      "Getting Perseverance's samples to Earth now depends on future missions, possibly from other countries or commercial partners."
+    ],
+    "quotes": [
+      {
+        "timestamp": "00:02:18",
+        "speaker": "Guest",
+        "quote": "Yes, it's launching in early 2026 - they're planning to bring back samples.",
+        "why_notable": "The episode's central claim, now out of date",
+        "raw_line": "Yes, um, it's launching in early 2026 — they're planning to bring back samples."
+      },
+      {
+        "timestamp": "00:03:05",
+        "speaker": "Guest",
+        "quote": "And the Perseverance rover has already collected the samples it would bring home.",
+        "why_notable": "Links the rover's completed work to the planned return mission",
+        "raw_line": "And the Perseverance rover has already, uh, collected the the samples it would bring home."
+      }
+    ],
+    "topics": [
+      "mars",
+      "nasa",
+      "mars-sample-return",
+      "perseverance-rover",
+      "space-exploration"
+    ]
+  },
+  "fact_checks": [
+    {
+      "claim_id": "C1",
+      "claim": "NASA recently announced a new Mars mission.",
+      "speaker": "Host",
+      "timestamp": "00:02:14",
+      "claim_type": "factual",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "Too vague to pin to a single announcement. The closest match is NASA's January 2025 statement that it would look at two landing options for Mars Sample Return. After that, the FY2026 budget request proposed ending the program, and later coverage reports it was effectively cancelled in January 2026. As of November 2026, no retrieved source shows a recent NASA announcement of a new sample-return mission.",
+      "evidence": [
+        {
+          "source_id": "kb-nasa-mars-sample-return",
+          "title": "NASA Mars Sample Return timeline under review",
+          "url": "https://www.nasa.gov/news-release/nasa-to-explore-two-landing-options-for-returning-samples-from-mars/",
+          "as_of": "2025-06",
+          "tier": "reference"
+        },
+        {
+          "source_id": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+          "title": "An abandoned rock sample could prove life once existed on Mars. But will it ever reach Earth?",
+          "url": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+          "as_of": "24 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C2",
+      "claim": "The NASA Mars mission (sample return) is launching in early 2026 and plans to bring back samples from Mars.",
+      "speaker": "Guest",
+      "timestamp": "00:02:18",
+      "claim_type": "factual",
+      "verdict": "possibly_outdated_or_inaccurate",
+      "verdict_label": "⚠️ Possibly outdated/inaccurate",
+      "confidence": 0.9,
+      "rationale": "The reference KB, citing NASA's January 2025 release, says no Mars sample-return launch was scheduled for early 2026 and that samples would not come back before 2035-2039. The FY2026 budget request proposed ending the program. CNN (Oct 2026) and Scientific American say the January 2026 appropriations effectively cancelled Mars Sample Return. As of today, the claimed early-2026 launch did not happen and is not planned.",
+      "evidence": [
+        {
+          "source_id": "kb-nasa-mars-sample-return",
+          "title": "NASA Mars Sample Return timeline under review",
+          "url": "https://www.nasa.gov/news-release/nasa-to-explore-two-landing-options-for-returning-samples-from-mars/",
+          "as_of": "2025-06",
+          "tier": "reference"
+        },
+        {
+          "source_id": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+          "title": "An abandoned rock sample could prove life once existed on Mars. But will it ever reach Earth?",
+          "url": "https://edition.cnn.com/2026/10/12/science/nasa-mars-sample-return-sapphire-canyon-china",
+          "as_of": "24 days ago",
+          "tier": "other_web"
+        },
+        {
+          "source_id": "https://www.scientificamerican.com/article/nasas-mars-sample-return-mission-in-jeopardy-as-u-s-considers-abandoning/",
+          "title": "NASA’s Mars sample return mission in jeopardy as U.S. considers abandoning retrieval",
+          "url": "https://www.scientificamerican.com/article/nasas-mars-sample-return-mission-in-jeopardy-as-u-s-considers-abandoning/",
+          "as_of": "163 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C3",
+      "claim": "The Perseverance rover has already collected the samples that the sample return mission would bring home.",
+      "speaker": "Guest",
+      "timestamp": "00:03:05",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.85,
+      "rationale": "NASA/JPL photojournal pages show 33 sample tubes used by Perseverance as of July 2025, and NASA reported the rover's first rock core in 2021. So the rover has collected samples meant for return. Caveat: no return mission is currently funded, so 'would bring home' depends on a mission that may not happen.",
+      "evidence": [
+        {
+          "source_id": "https://science.nasa.gov/photojournal/the-33-sample-tubes-collected-by-perseverance/",
+          "title": "The 33 Sample Tubes Collected by Perseverance - NASA Science",
+          "url": "https://science.nasa.gov/photojournal/the-33-sample-tubes-collected-by-perseverance/",
+          "as_of": "345 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "https://www.jpl.nasa.gov/images/pia26643-the-33-sample-tubes-collected-by-perseverance/",
+          "title": "The 33 Sample Tubes Collected by Perseverance",
+          "url": "https://www.jpl.nasa.gov/images/pia26643-the-33-sample-tubes-collected-by-perseverance/",
+          "as_of": "470 days ago",
+          "tier": "trusted_web"
+        },
+        {
+          "source_id": "https://www.nasa.gov/news-release/nasas-perseverance-rover-collects-first-mars-rock-sample/",
+          "title": "NASA’s Perseverance Rover Collects First Mars Rock Sample - NASA",
+          "url": "https://www.nasa.gov/news-release/nasas-perseverance-rover-collects-first-mars-rock-sample/",
+          "as_of": "1198 days ago",
+          "tier": "trusted_web"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    }
+  ],
+  "reviewer_notes": [
+    "The transcript excerpt is only 4 lines (00:02:14-00:03:05), so the summary had to be padded with context. An editor may want the full transcript.",
+    "C2 (early-2026 sample-return launch) is out of date as of 2026-11-05. Mars Sample Return never had an early-2026 launch, and US FY2026 appropriations effectively cancelled it. Consider an editor's note or correction in the show notes.",
+    "C1 is vague ('recently announced something'). It probably refers to NASA's January 2025 announcement of two landing options, but there is no specific new mission announcement to verify.",
+    "Some cancellation evidence comes from other_web outlets (CNN, Scientific American). It is backed by the reference KB, which cites a NASA release. A space-policy reviewer could confirm the final appropriations status on nasa.gov.",
+    "The episode's recording date is unknown. If it was recorded before 2025, the early-2026 date may have reflected older plans."
+  ],
+  "ingest": {
+    "lines_parsed": 4,
+    "lines_kept": 4,
+    "lines_cleaned": 3,
+    "lines_flagged": 0,
+    "lines_dropped": [],
+    "speakers_mapped": {
+      "Host": "Host",
+      "Guest": "Guest"
+    },
+    "flags": []
+  },
+  "metrics": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "model_turns": 4,
+    "tool_calls": 9,
+    "rejected_tool_calls": 0,
+    "searches": 1,
+    "web_searches": 4,
+    "blocked_results_dropped": 0,
+    "input_tokens": 14,
+    "output_tokens": 4636,
+    "cache_read_tokens": 62253,
+    "cache_write_tokens": 17571,
+    "estimated_cost_usd": 0.2055,
+    "duration_seconds": 65.1
+  },
+  "generated_at": "2026-11-06T01:15:47+00:00"
+}

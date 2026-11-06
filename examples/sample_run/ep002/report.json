@@ -1,0 +1,333 @@
+{
+  "episode_id": "ep002",
+  "title": "AI in Healthcare: Hype or Reality?",
+  "host": "David Chen",
+  "guests": [
+    "Dr. Priya Patel",
+    "Alex Moore"
+  ],
+  "source_file": "ep002_ai_healthcare.json",
+  "client_id": "default",
+  "source_policy_version": "b46f0e416d7b",
+  "status": "complete",
+  "error": null,
+  "plan": [
+    {
+      "step": 1,
+      "action": "Submit summary and key notes",
+      "tool": "submit_summary, submit_key_notes",
+      "rationale": "Core deliverables from the transcript"
+    },
+    {
+      "step": 2,
+      "action": "Register check-worthy claims",
+      "tool": "register_claims",
+      "rationale": "Fact-check inputs"
+    },
+    {
+      "step": 3,
+      "action": "Search KB and web for evidence",
+      "tool": "search_knowledge_base, web_search",
+      "rationale": "Gather evidence, prefer trusted domains"
+    },
+    {
+      "step": 4,
+      "action": "Record verdicts and finish",
+      "tool": "record_verdict, finish",
+      "rationale": "Complete report"
+    }
+  ],
+  "summary": {
+    "text": "In this episode of Tech Health Today, host David Chen talks with Dr. Priya Patel and Alex Moore about whether AI in healthcare is hype or reality. Chen opens by saying AI is everywhere but complicated in medicine, and he sets out to separate real uses from inflated expectations.\n\nDr. Patel confirms that diagnostic and triage assistants are already in use. Some hospitals use AI to read X-rays or flag urgent cases, but she stresses that these tools assist clinicians and do not replace them. Moore adds that regulatory barriers are significant. He says the FDA reviews these systems carefully, so fully autonomous AI is unlikely soon. Asked what patients might see directly, Patel points to smart triage chatbots on hospital websites and apps that help patients decide their next steps before seeing a doctor.\n\nMoore names data privacy and bias as major hurdles, because AI learns from existing clinical data that may be skewed. Chen asks why adoption keeps growing anyway. Patel cites efficiency and clinician support, since hospitals want faster reads and fewer errors. Moore says the COVID-19 pandemic sped up digital health adoption, including AI tools.\n\nOn the future, Patel expects AI copilots that suggest treatment plans, with a human always making the final decision. Moore says interoperability is essential and that AI will work best when systems exchange data securely. Chen closes by recommending cautious optimism: AI is powerful, but its role in healthcare should stay assistive and well regulated.",
+    "word_count": 244,
+    "core_themes": [
+      "Hype versus reality of AI in healthcare",
+      "AI as assistive rather than autonomous",
+      "Regulation and FDA oversight",
+      "Data privacy, bias and interoperability"
+    ],
+    "key_discussions": [
+      "AI for X-ray reading and urgent-case flagging in hospitals",
+      "FDA review as a barrier to full autonomy",
+      "Triage chatbots on hospital websites and apps",
+      "Bias in clinical training data and privacy concerns",
+      "Pandemic-driven acceleration of digital health",
+      "Future AI copilots for treatment planning"
+    ],
+    "outcomes": [
+      "Panel agrees AI should support, not replace, clinicians",
+      "Humans should keep the final say on treatment decisions",
+      "Interoperability seen as key to AI's future value",
+      "Host recommends cautious optimism"
+    ]
+  },
+  "key_notes": {
+    "takeaways": [
+      "Today's clinical AI, such as X-ray reading and urgent-case flagging, assists clinicians rather than replacing them.",
+      "FDA review of AI medical tools means fully autonomous AI is unlikely in the near term.",
+      "Patients are most likely to meet AI through triage chatbots on hospital websites and apps.",
+      "Bias in historical clinical data and data privacy are major risks to evaluate in any AI tool.",
+      "Secure interoperability between systems is a prerequisite for AI to deliver its full value."
+    ],
+    "quotes": [
+      {
+        "timestamp": "00:00:55",
+        "speaker": "Dr. Priya Patel",
+        "quote": "But it's assistive, not replacing clinicians.",
+        "why_notable": "Sums up the episode's central position",
+        "raw_line": "Yes. Some hospitals use AI for reading X-rays or flagging urgent cases. But it’s assistive, not replacing clinicians."
+      },
+      {
+        "timestamp": "00:02:20",
+        "speaker": "Alex Moore",
+        "quote": "AI learns from existing clinical data, which may be skewed.",
+        "why_notable": "Explains briefly where AI bias comes from",
+        "raw_line": "Data privacy and bias are major hurdles. AI learns from existing clinical data, which may be skewed."
+      },
+      {
+        "timestamp": "00:04:15",
+        "speaker": "Dr. Priya Patel",
+        "quote": "AI copilots that suggest treatment plans, but a human will always make the final call.",
+        "why_notable": "Gives a human-in-the-loop view of the future",
+        "raw_line": "Yes, AI copilots that suggest treatment plans, but a human will always make the final call."
+      },
+      {
+        "timestamp": "00:05:10",
+        "speaker": "David Chen",
+        "quote": "AI is powerful, but cautious optimism is the way forward.",
+        "why_notable": "The episode's closing message",
+        "raw_line": "Thanks, Priya and Alex. And thanks to our listeners. AI is powerful, but cautious optimism is the way forward."
+      }
+    ],
+    "topics": [
+      "ai-in-healthcare",
+      "medical-imaging",
+      "fda-regulation",
+      "triage-chatbots",
+      "algorithmic-bias",
+      "interoperability",
+      "digital-health"
+    ]
+  },
+  "fact_checks": [
+    {
+      "claim_id": "C1",
+      "claim": "Some hospitals use AI for reading X-rays or flagging urgent cases, as assistive tools rather than replacements for clinicians.",
+      "speaker": "Dr. Priya Patel",
+      "timestamp": "00:00:55",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.9,
+      "rationale": "The FDA's list of AI-enabled devices shows that roughly three quarters are radiology tools. FDA-cleared computer-aided triage (CADt) software reads CT scans and X-rays, flags urgent findings, and is used in many US hospitals. These tools are assistive: the radiologist still makes the diagnosis.",
+      "evidence": [
+        {
+          "source_id": "kb-fda-ai-device-list",
+          "title": "FDA list of AI-enabled medical devices",
+          "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+          "as_of": "2025-07",
+          "tier": "reference"
+        },
+        {
+          "source_id": "kb-radiology-triage-cadt",
+          "title": "AI triage tools flag urgent findings for radiologists",
+          "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+          "as_of": "2025-01",
+          "tier": "reference"
+        },
+        {
+          "source_id": "https://www.fda.gov/medical-devices/digital-health-center-excellence/artificial-intelligence-enabled-medical-devices",
+          "title": "Artificial Intelligence-Enabled Medical Devices",
+          "url": "https://www.fda.gov/medical-devices/digital-health-center-excellence/artificial-intelligence-enabled-medical-devices",
+          "as_of": "45 days ago",
+          "tier": "trusted_web"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C2",
+      "claim": "The FDA reviews AI healthcare systems carefully, so full autonomy isn't happening anytime soon.",
+      "speaker": "Alex Moore",
+      "timestamp": "00:01:15",
+      "claim_type": "factual",
+      "verdict": "possibly_outdated_or_inaccurate",
+      "verdict_label": "⚠️ Possibly outdated/inaccurate",
+      "confidence": 0.7,
+      "rationale": "It is true that the FDA reviews AI devices through the 510(k), De Novo and PMA pathways. But the claim oversimplifies: the FDA authorised the autonomous IDx-DR (LumineticsCore) diabetic retinopathy screening device in 2018. Autonomous AI already exists for narrow tasks, even though most authorised devices are assistive.",
+      "evidence": [
+        {
+          "source_id": "kb-idx-dr-autonomous",
+          "title": "First FDA-authorised autonomous AI diagnostic (IDx-DR, 2018)",
+          "url": "https://www.fda.gov/news-events/press-announcements/fda-permits-marketing-artificial-intelligence-based-device-detect-certain-diabetes-related-eye-problems",
+          "as_of": "2018-04",
+          "tier": "reference"
+        },
+        {
+          "source_id": "kb-fda-ai-device-list",
+          "title": "FDA list of AI-enabled medical devices",
+          "url": "https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices",
+          "as_of": "2025-07",
+          "tier": "reference"
+        },
+        {
+          "source_id": "https://iovs.arvojournals.org/article.aspx?articleid=2744233",
+          "title": "FDA-authorized autonomous AI for diabetic retinopathy screening in clinical routine",
+          "url": "https://iovs.arvojournals.org/article.aspx?articleid=2744233",
+          "as_of": "2664 days ago",
+          "tier": "other_web"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C3",
+      "claim": "Hospitals deploy smart triage chatbots on websites or apps to help patients figure out next steps before seeing a doctor.",
+      "speaker": "Dr. Priya Patel",
+      "timestamp": "00:01:50",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.8,
+      "rationale": "The reference KB confirms that many health systems and digital-health firms offer symptom checkers or triage chatbots that suggest a level of care before a patient sees a clinician. Their accuracy varies: a 2015 BMJ study found appropriate triage advice in about 57% of test cases.",
+      "evidence": [
+        {
+          "source_id": "kb-symptom-checkers",
+          "title": "Online symptom checkers and triage chatbots",
+          "url": "https://www.bmj.com/content/351/bmj.h3480",
+          "as_of": "2023-01",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C4",
+      "claim": "AI learns from existing clinical data, which may be skewed, making bias a major hurdle.",
+      "speaker": "Alex Moore",
+      "timestamp": "00:02:20",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.85,
+      "rationale": "Obermeyer et al. (Science, 2019) showed that an algorithm trained on historical cost data under-identified Black patients for extra care. The study is widely cited as evidence that models trained on historical clinical data can encode bias.",
+      "evidence": [
+        {
+          "source_id": "kb-algorithmic-bias-obermeyer",
+          "title": "Racial bias in a widely used health-care algorithm (Science, 2019)",
+          "url": "https://www.science.org/doi/10.1126/science.aax2342",
+          "as_of": "2019-10",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C5",
+      "claim": "The pandemic accelerated digital health adoption, including AI tools.",
+      "speaker": "Alex Moore",
+      "timestamp": "00:03:30",
+      "claim_type": "factual",
+      "verdict": "verified",
+      "verdict_label": "✅ Verified true",
+      "confidence": 0.8,
+      "rationale": "McKinsey (2021) found telehealth use stabilised at about 38 times pre-pandemic levels, and investment in digital-health tools, including AI, rose sharply over the same period.",
+      "evidence": [
+        {
+          "source_id": "kb-pandemic-telehealth",
+          "title": "COVID-19 accelerated telehealth and digital-health adoption",
+          "url": "https://www.mckinsey.com/industries/healthcare/our-insights/telehealth-a-quarter-trillion-dollar-post-covid-19-reality",
+          "as_of": "2021-07",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C6",
+      "claim": "AI copilots will suggest treatment plans, but a human will always make the final call.",
+      "speaker": "Dr. Priya Patel",
+      "timestamp": "00:04:15",
+      "claim_type": "prediction",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "This is a forward-looking prediction (\"always\"). Today, decision-support and copilot tools do exist with clinicians keeping final responsibility, but the future cannot be verified.",
+      "evidence": [
+        {
+          "source_id": "kb-ambient-ai-scribes",
+          "title": "Clinical AI copilots: ambient scribes and decision support",
+          "url": "https://www.nuance.com/healthcare/dragon-ai-clinical-solutions.html",
+          "as_of": "2025-03",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    },
+    {
+      "claim_id": "C7",
+      "claim": "AI will work best when systems are interoperable and talk to each other securely.",
+      "speaker": "Alex Moore",
+      "timestamp": "00:04:40",
+      "claim_type": "prediction",
+      "verdict": "unverifiable",
+      "verdict_label": "❓ Unverifiable",
+      "confidence": 0.5,
+      "rationale": "This is a prediction or opinion. Context supports it: poor interoperability is widely cited as a barrier to deploying AI, and the Cures Act requires FHIR APIs. But the claim itself cannot be tested.",
+      "evidence": [
+        {
+          "source_id": "kb-interoperability-cures-act",
+          "title": "Interoperability rules: 21st Century Cures Act and FHIR APIs",
+          "url": "https://www.healthit.gov/topic/oncs-cures-act-final-rule",
+          "as_of": "2023-01",
+          "tier": "reference"
+        }
+      ],
+      "needs_human_review": false,
+      "review_reason": null
+    }
+  ],
+  "reviewer_notes": [
+    "C2 (Alex Moore, 00:01:15): the claim that 'full autonomy isn't happening anytime soon' oversimplifies. The FDA authorised the autonomous IDx-DR device in 2018. Consider an editorial clarification in the show notes.",
+    "C3: triage chatbots exist, but published evaluations show their accuracy varies widely (about 57% appropriate triage in a 2015 BMJ study). Avoid implying they are reliable.",
+    "C5's evidence is a 2021 McKinsey estimate, so it is dated; the direction is well established.",
+    "Web search results came back as raw strings and could not be parsed, so most evidence comes from the curated reference KB. The C2 web source (arvojournals) is other_web.",
+    "The panel's speaker roles are clear; no likely transcription errors. Patel's credentials and specialty are not stated in the episode."
+  ],
+  "ingest": {
+    "lines_parsed": 16,
+    "lines_kept": 16,
+    "lines_cleaned": 0,
+    "lines_flagged": 0,
+    "lines_dropped": [],
+    "speakers_mapped": {
+      "David": "David Chen",
+      "Dr. Priya": "Dr. Priya Patel",
+      "Alex": "Alex Moore"
+    },
+    "flags": []
+  },
+  "metrics": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "model_turns": 5,
+    "tool_calls": 14,
+    "rejected_tool_calls": 0,
+    "searches": 2,
+    "web_searches": 3,
+    "blocked_results_dropped": 0,
+    "input_tokens": 14,
+    "output_tokens": 5779,
+    "cache_read_tokens": 71963,
+    "cache_write_tokens": 20035,
+    "estimated_cost_usd": 0.2446,
+    "duration_seconds": 61.6
+  },
+  "generated_at": "2026-11-06T01:15:07+00:00"
+}
