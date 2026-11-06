@@ -91,3 +91,16 @@ def test_history_search_and_verdict_filter(db):
     at.multiselect(key="h_verdicts").set_value(["possibly_outdated_or_inaccurate"]).run()
     df = at.dataframe[0].value
     assert len(df) >= 2 and set(df["Episode"]) <= {"ep002", "ep900"}
+
+
+def test_mark_reviewed_button_signs_off_a_flagged_claim(db):
+    at = app("Report review")
+    at.selectbox(key="episode").set_value("ep900").run()
+    assert "Needs human review" in " ".join(w.value for w in at.warning)
+    at.button(key="c_rev_C1").click().run()
+    assert not at.exception, at.exception
+    assert db.reviews("ep900")["C1"]["who"] == "editor"
+    assert any("Reviewed by editor" in s.value for s in at.success)
+    at.button(key="c_unrev_C1").click().run()
+    assert db.reviews("ep900") == {}
+    assert not [b for b in at.button if b.key == "c_rev_C3"]     # unflagged claims get no sign-off button
