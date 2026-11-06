@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: podcast-agent
+    folder: Podcast agent
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

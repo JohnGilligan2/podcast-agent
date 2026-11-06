@@ -22,6 +22,19 @@ CACHE_READ_MULTIPLIER = 0.1   # cache reads bill at ~10% of the input rate
 CACHE_WRITE_MULTIPLIER = 1.25  # 5-minute cache writes bill at 125% of the input rate
 
 
+def _int(name: str, default: int, minimum: int = 1) -> int:
+    raw = os.getenv(name)
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        raise ValueError(f"{name} must be a whole number, got {raw!r}") from None
+    if value < minimum:
+        raise ValueError(f"{name} must be at least {minimum}, got {value}")
+    return value
+
+
 def _bool(name: str, default: bool) -> bool:
     raw = os.getenv(name)
     if raw is None or raw == "":
@@ -50,6 +63,7 @@ class Settings:
     kb_path: Path = field(default=PROJECT_ROOT / "data" / "knowledge_base.json")
     output_dir: Path = field(default=PROJECT_ROOT / "output")
     client_config: Path = field(default=PROJECT_ROOT / "data" / "clients" / "default.json")
+    otel: bool = False                     # OpenTelemetry traces + metrics (pip install ".[otel]")
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -59,14 +73,15 @@ class Settings:
             base,
             model=os.getenv("PODCAST_AGENT_MODEL", base.model),
             effort=os.getenv("PODCAST_AGENT_EFFORT", base.effort),
-            max_steps=int(os.getenv("PODCAST_AGENT_MAX_STEPS", base.max_steps)),
-            concurrency=int(os.getenv("PODCAST_AGENT_CONCURRENCY", base.concurrency)),
+            max_steps=_int("PODCAST_AGENT_MAX_STEPS", base.max_steps),
+            concurrency=_int("PODCAST_AGENT_CONCURRENCY", base.concurrency),
             enable_web_search=_bool("PODCAST_AGENT_WEB_SEARCH", base.enable_web_search),
             refusal_fallback=_bool("PODCAST_AGENT_REFUSAL_FALLBACK", base.refusal_fallback),
+            otel=_bool("PODCAST_AGENT_OTEL", base.otel),
             kb_path=Path(os.getenv("PODCAST_AGENT_KB", str(base.kb_path))),
             output_dir=Path(os.getenv("PODCAST_AGENT_OUTPUT", str(base.output_dir))),
             client_config=resolve_client(os.getenv("PODCAST_AGENT_CLIENT") or str(base.client_config)),
-            web_search_max_uses=int(os.getenv("PODCAST_AGENT_WEB_SEARCH_MAX_USES", base.web_search_max_uses)),
+            web_search_max_uses=_int("PODCAST_AGENT_WEB_SEARCH_MAX_USES", base.web_search_max_uses),
         )
 
     def estimate_cost(self, input_tokens: int, output_tokens: int,

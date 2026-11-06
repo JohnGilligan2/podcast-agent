@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-from .ingest import Episode, normalize_timestamp
+from .ingest import HONORIFICS, Episode, normalize_timestamp
 from .knowledge_base import KnowledgeBase
 from .sources import TRUSTED_TIERS, UNTRUSTED_MAX_CONFIDENCE, ClientSources
 from .schemas import (
@@ -51,16 +51,16 @@ def _norm(text: str) -> str:
 def quote_matches(quote: str, source: str) -> bool:
     """True if `quote` appears verbatim in `source` (case/punctuation-insensitive).
     An ellipsis may join fragments, which must appear in order."""
-    fragments = [f for f in re.split(r"\.\.\.|…", quote) if _norm(f)]
+    fragments = [_norm(f) for f in re.split(r"\.\.\.|…", quote) if _norm(f)]
     if not fragments:
         return False
-    hay = _norm(source)
+    hay = f" {_norm(source)} "          # padded so fragments match whole words only ("art" ≠ "startup")
     pos = 0
     for frag in fragments:
-        idx = hay.find(_norm(frag), pos)
+        idx = hay.find(f" {frag} ", pos)
         if idx < 0:
             return False
-        pos = idx + len(_norm(frag))
+        pos = idx + len(frag) + 1       # keep the trailing space for the next fragment
     return True
 
 
@@ -69,9 +69,14 @@ def slugify_tag(tag: str) -> str:
     return tag
 
 
+def _name_tokens(name: str) -> set[str]:
+    return {t for t in re.findall(r"[^\W\d_]+", name.lower()) if t not in HONORIFICS}
+
+
 def _speaker_matches(given: str, actual: str, label: str) -> bool:
-    g = given.lower().strip()
-    return bool(g) and (g in actual.lower() or g in label.lower() or actual.lower() in g)
+    """Whole-name-word match: "Mark", "Dr. Priya" and "Priya Patel" match "Dr. Priya Patel"; "n" does not."""
+    g = _name_tokens(given)
+    return bool(g) and (g <= _name_tokens(actual) or g <= _name_tokens(label))
 
 
 # --------------------------------------------------------------------------------------
@@ -302,7 +307,7 @@ class ToolExecutor:
         return f"Key notes accepted: 5 takeaways, {len(quotes)} verified quotes, tags {topics}."
 
     def register_claims(self, args: dict) -> dict:
-        accepted, problems = [], []
+        accepted, problems, notes = [], [], []
         for c in args["claims"]:
             try:
                 ts = normalize_timestamp(c["timestamp"])
@@ -314,16 +319,18 @@ class ToolExecutor:
                 problems.append(f"claim '{c['claim'][:40]}': no transcript line at {ts}")
                 continue
             cid = f"C{len(self.state.claims) + 1}"
-            line = next((ln for ln in lines if _speaker_matches(c["speaker"], ln.speaker, ln.speaker_label)),
-                        lines[0])
+            line = next((ln for ln in lines if _speaker_matches(c["speaker"], ln.speaker, ln.speaker_label)), None)
+            if line is None:   # the transcript is the authority on who spoke: use it, and say so
+                line = lines[0]
+                notes.append(f"{cid}: speaker at {ts} is {line.speaker}, not {c['speaker']!r}; corrected")
             claim = Claim(claim_id=cid, claim=c["claim"].strip(), speaker=line.speaker,
                           timestamp=ts, claim_type=c["claim_type"])
             self.state.claims[cid] = claim
             accepted.append({"claim_id": cid, "claim": claim.claim})
-        self.state.claims_registered = True
         if problems and not accepted:
             raise ToolRejected("No claims registered: " + "; ".join(problems))
-        return {"registered": accepted, "rejected": problems}
+        self.state.claims_registered = True   # only once something (or an explicit empty list) was accepted
+        return {"registered": accepted, "rejected": problems, "notes": notes}
 
     def search_knowledge_base(self, args: dict) -> dict:
         self.state.searches += 1

@@ -45,12 +45,16 @@ CTX_START_RE = re.compile(rf"(^|[.!?]\s+)(?:{_CTX_ALT}),\s*", re.IGNORECASE)    
 STAGE_RE = re.compile(r"\s*[\[(](?:" + "|".join(re.escape(s) for s in STAGE_DIRECTIONS) + r")[\])]\s*",
                       re.IGNORECASE)
 STUTTER_RE = re.compile(r"\b(\w+(?:'\w+)?)(?:,?\s+\1\b)+", re.IGNORECASE)
-ASCII_MAP = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"', "—": "-", "–": "-", "…": "..."})
+ASCII_MAP = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"', "—": "-", "–": "-", "…": "...",
+                           "\u00a0": " "})
+# Invisible characters that break parsing: NUL, other control chars (not tab), zero-width marks, stray BOMs.
+INVISIBLE_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u200b-\u200f\u2028\u2029\u2060\ufeff]")
+MAX_FILE_BYTES = 5_000_000      # ~10x a 3-hour episode; anything bigger is not a transcript
 
 TS = r"\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d{1,3})?"
 LINE_RE = re.compile(
     rf"^\s*(?:\[?(?P<ts>{TS})\]?\s*)?"                       # optional timestamp, brackets optional
-    r"(?P<speaker>[A-Za-z][\w.'’ -]{0,40}?)\s*"              # speaker label
+    r"(?!https?:)(?P<speaker>[^\W\d_][\w.'’ -]{0,40}?)\s*"  # speaker label (any script, not a URL)
     r"(?::|\s[-–—]\s)\s*(?P<text>.*)$")                      # colon or spaced dash, then the text
 META_RE = re.compile(r"^\s*#?\s*(?P<key>title|host|guests?|episode_id)\s*:\s*(?P<value>.+)$", re.IGNORECASE)
 
@@ -59,16 +63,25 @@ class TranscriptError(ValueError):
     """Raised when a transcript file cannot be parsed."""
 
 
-def normalize_timestamp(ts: str) -> str:
-    """'0:00' -> '00:00:00', '1:05' -> '00:01:05', '[00:02:30.500]' -> '00:02:30'.
-    Accepts M:SS, MM:SS, H:MM:SS, optional milliseconds and brackets. Raises ValueError on garbage."""
-    core = re.split(r"[.,]", ts.strip().strip("[]"))[0]
+def safe_id(value: str) -> str:
+    """An episode id that is safe as a folder name: letters, digits, '.', '_' and '-' only
+    ('../../x' -> 'x', 'ep:01' -> 'ep_01')."""
+    return re.sub(r"[^\w.-]", "_", value, flags=re.ASCII).strip("._-")[:64]
+
+
+def normalize_timestamp(ts: str | int | float) -> str:
+    """'0:00' -> '00:00:00', '1:05' -> '00:01:05', '75:30' -> '01:15:30', '[00:02:30.500]' -> '00:02:30',
+    75 (seconds, as some JSON exports give) -> '00:01:15'. Raises ValueError on garbage."""
+    if isinstance(ts, (int, float)) and not isinstance(ts, bool) and ts >= 0:
+        h, rest = divmod(int(ts), 3600)
+        return f"{h:02d}:{rest // 60:02d}:{rest % 60:02d}"
+    core = re.split(r"[.,]", str(ts).strip().strip("[]"))[0]
     parts = core.split(":")
     if not 2 <= len(parts) <= 3 or not all(p.isdigit() for p in parts):
         raise ValueError(f"bad timestamp {ts!r}")
     nums = [int(p) for p in parts]
-    if len(nums) == 2:
-        nums.insert(0, 0)
+    if len(nums) == 2:                       # M:SS — minutes may run past 60 in long episodes
+        nums = [*divmod(nums[0], 60), nums[1]]
     h, m, s = nums
     if m >= 60 or s >= 60:
         raise ValueError(f"bad timestamp {ts!r}")
@@ -141,7 +154,8 @@ class Episode:
             section = f" ({u.section})" if u.section else ""
             note = f"  [ingest note: {'; '.join(u.flags)}]" if u.flags else ""
             lines.append(f"[{u.timestamp}] {u.speaker} [{u.role}]{section}: {u.text}{note}")
-        return "\n".join(lines)
+        # The transcript is wrapped in <transcript> tags in the prompt; a line can't close them early.
+        return "\n".join(lines).replace("</transcript", "<\\/transcript")
 
 
 def _tokens(name: str) -> list[str]:
@@ -171,21 +185,49 @@ def _resolve_speaker(label: str, host: str | None, guests: list[str]) -> tuple[s
     return lab, "unknown"
 
 
+def read_text(path: Path) -> str:
+    """Decode a transcript whatever encoding it was saved in: UTF-16 (BOM), UTF-8 (with or without BOM),
+    else Windows-1252 with undecodable bytes replaced. Never raises on content."""
+    try:
+        size = path.stat().st_size
+        data = path.read_bytes()
+    except OSError as exc:
+        raise TranscriptError(f"{path.name}: cannot read file ({exc.strerror or exc})") from exc
+    if size > MAX_FILE_BYTES:
+        raise TranscriptError(f"{path.name}: {size / 1e6:.1f} MB is too large for a transcript "
+                              f"(limit {MAX_FILE_BYTES / 1e6:.0f} MB)")
+    if data[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        return data.decode("utf-16", errors="replace")
+    try:
+        return data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return data.decode("cp1252", errors="replace")
+
+
+def _text(value) -> str:
+    """JSON values as clean strings: null -> '', numbers -> '5', invisible characters removed."""
+    return "" if value is None else INVISIBLE_RE.sub("", str(value)).strip()
+
+
 def _load_json(path: Path) -> tuple[dict, list[dict]]:
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(read_text(path))
     except json.JSONDecodeError as exc:
         raise TranscriptError(f"{path.name}: invalid JSON ({exc})") from exc
-    rows = data.get("transcript")
-    if not isinstance(rows, list) or not rows:
-        raise TranscriptError(f"{path.name}: missing non-empty 'transcript' list")
+    if not isinstance(data, dict):
+        raise TranscriptError(f"{path.name}: expected a JSON object with a 'transcript' list")
+    rows = [r for r in data.get("transcript") or [] if isinstance(r, dict)] \
+        if isinstance(data.get("transcript"), list) else []
+    if not rows:
+        raise TranscriptError(f"{path.name}: missing non-empty 'transcript' list of objects")
     return data, rows
 
 
 def _load_txt(path: Path) -> tuple[dict, list[dict]]:
     meta: dict = {}
     rows: list[dict] = []
-    for raw in path.read_text(encoding="utf-8-sig").splitlines():
+    for raw in read_text(path).splitlines():
+        raw = INVISIBLE_RE.sub("", raw)
         if not raw.strip():
             continue
         if not rows and (m := META_RE.match(raw)):        # header lines come before the first utterance
@@ -212,8 +254,11 @@ def load_episode(path: str | Path) -> Episode:
     else:
         raise TranscriptError(f"{path.name}: unsupported file type (use .json or .txt)")
 
-    host = meta.get("host")
-    guests = list(meta.get("guests") or [])
+    host = _text(meta.get("host")) or None
+    guests_raw = meta.get("guests") or []
+    if isinstance(guests_raw, str):                       # "Alice, Bob" rather than a list
+        guests_raw = guests_raw.split(",")
+    guests = [g for g in (_text(x) for x in (guests_raw if isinstance(guests_raw, list) else [])) if g]
     utterances: list[Utterance] = []
     dropped: list[dict] = []
     speaker_map: dict[str, str] = {}
@@ -222,21 +267,21 @@ def load_episode(path: str | Path) -> Episode:
     for i, row in enumerate(rows):
         flags: list[str] = []
         ts_raw = row.get("timestamp")
-        if ts_raw in (None, ""):
+        try:
+            ts = normalize_timestamp(ts_raw) if ts_raw not in (None, "") else None
+        except ValueError:
+            ts = None
+        if ts is None:                                    # missing or unreadable: keep the line, flag it
             ts = last_ts or "00:00:00"
-            flags.append(f"no timestamp in file; using {ts} from the previous line")
-        else:
-            try:
-                ts = normalize_timestamp(str(ts_raw))
-            except ValueError as exc:
-                raise TranscriptError(f"{path.name}: row {i}: {exc}") from exc
+            what = "no timestamp" if ts_raw in (None, "") else f"unreadable timestamp {str(ts_raw)[:20]!r}"
+            flags.append(f"{what} in file; using {ts} from the previous line")
         last_ts = ts
-        raw_text = str(row.get("text", "")).strip()
+        raw_text = _text(row.get("text"))
         text = clean_text(raw_text)
         removed = [d.strip() for d in STAGE_RE.findall(raw_text.translate(ASCII_MAP))]
         if removed:
             flags.append("stage direction removed: " + ", ".join(removed))
-        label = str(row.get("speaker", "Unknown"))
+        label = _text(row.get("speaker")) or "Unknown"
         if not text or is_only_filler(raw_text, text):
             dropped.append({"timestamp": ts, "speaker": label, "raw_text": raw_text})
             continue
@@ -245,7 +290,7 @@ def load_episode(path: str | Path) -> Episode:
         speaker_map[label] = speaker
         if role == "unknown" and (host or guests):
             flags.append(f"speaker '{label}' not in the header")
-        utterances.append(Utterance(len(utterances), ts, label, speaker, role, row.get("section"),
+        utterances.append(Utterance(len(utterances), ts, label, speaker, role, _text(row.get("section")) or None,
                                     text, raw_text, flags))
     if not utterances:
         raise TranscriptError(f"{path.name}: nothing left after cleaning")
@@ -264,8 +309,8 @@ def load_episode(path: str | Path) -> Episode:
                   for u in utterances if u.flags],
     }
     return Episode(
-        episode_id=str(meta.get("episode_id") or path.stem.split("_")[0]),
-        title=str(meta.get("title") or path.stem.replace("_", " ")),
+        episode_id=safe_id(_text(meta.get("episode_id")) or path.stem.split("_")[0]) or safe_id(path.stem) or "episode",
+        title=_text(meta.get("title")).replace("\n", " ") or path.stem.replace("_", " "),
         host=host,
         guests=guests,
         utterances=utterances,

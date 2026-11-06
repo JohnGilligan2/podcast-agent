@@ -239,15 +239,43 @@ All of them reuse the agent unchanged; only the entry point differs.
 
 ---
 
-## 7. Scalability
+## 7. Scalability: threads today, Kubernetes next, asyncio when it pays
+
+**Where the time goes** (measured, ep003): 35.9 s waiting on Claude across 4 turns, 0.14 s running our own
+tools and guardrails. The work is network-bound, so concurrency, not CPU, is what scales it. The AWS-native
+variant in §1 (ECS Fargate + SQS) is the same design with Fargate tasks in place of pods.
+
+| Stage | Runs on | Concurrency | Move on when |
+|---|---|---|---|
+| **1. Today** | One container (laptop, VM) | `ThreadPoolExecutor`, `--concurrency` episodes at once (default 3) | More than one machine is needed |
+| **2. Kubernetes workers** | The same image as a Deployment on the platform's cluster (Seekr's cloud, EKS/AKS/GKE/OpenShift, or a client's) | More **pods**, each running N threads; pods pull jobs from a queue | One pod needs hundreds of calls in flight |
+| **3. asyncio in the pod** | Same pods | `AsyncAnthropic` + `asyncio.gather`: hundreds of in-flight calls per process | It is a density/cost gain, not a requirement |
+
+```mermaid
+flowchart LR
+    API["Ingest API / GUI<br/>(Deployment + Ingress)"] --> Q[("Queue<br/>SQS · Kafka · Redis Streams")]
+    Q --> KEDA["KEDA ScaledObject<br/>scale on queue depth, 0 → N"]
+    KEDA --> W1["worker pod<br/>N threads"] & W2["worker pod<br/>N threads"] & W3["worker pod<br/>N threads"]
+    W1 & W2 & W3 --> RL[("Shared rate limiter<br/>token bucket in Redis<br/>sized to the TPM quota")]
+    RL --> GW["Model gateway<br/>Claude API · Bedrock · other hosting"]
+    W1 & W2 & W3 --> OT["OTel Collector<br/>(DaemonSet or sidecar)"]
+```
+
+| Concern | Kubernetes answer |
+|---|---|
+| Packaging | One Helm chart: worker Deployment, ingest Deployment, KEDA ScaledObject, PodDisruptionBudget, NetworkPolicies |
+| Autoscaling | **KEDA** on queue depth (scale to zero overnight); HPA on CPU is the wrong signal for network-bound work |
+| The real ceiling | The model's tokens-per-minute quota. Pod retries are not coordinated, so a **cluster-wide token bucket** (Redis) gates every call; the SDK still backs off on 429 |
+| Config | Client source policies as a versioned store (or ConfigMaps at first); secrets via External Secrets / the cloud's secret store |
+| Model access | Behind a gateway, so the provider or a self-hosted model can change without touching the agent (`llm.py` is already the only provider-specific file) |
+| Graceful shutdown | `terminationGracePeriodSeconds` > one episode (~2 min); unfinished jobs return to the queue and resume from the checkpoint |
 
 | Load | What scales | How |
 |---|---|---|
-| Upload bursts (a client drops a back catalogue of 500 episodes) | SQS absorbs it | Work is queued, not rejected; API answers `202` immediately. |
-| Steady throughput | Fargate task count | Target-tracking on `ApproximateNumberOfMessagesVisible / tasks`; 0 → N tasks, each running `PODCAST_AGENT_CONCURRENCY` episodes in parallel. |
-| Model rate limits (tokens/min) | A shared concurrency cap | Max tasks × per-task concurrency is sized under the account's TPM quota; SDK backs off on 429 with `retry-after`. Quota increases or provisioned throughput for sustained volume. |
-| Long episodes (2–3 h, ~30k words) | Context | ~45k tokens fits comfortably in a 1M-token context, so no chunking is needed for normal shows. For very long or multi-part content, a map-reduce step summarises segments first and the agent works from those. |
-| Back-catalogue jobs that are not urgent | Batch API | Route to the Message Batches API at 50% of the price, accepting up to 24 h turnaround. |
+| Upload bursts (a client drops a back catalogue of 500 episodes) | The queue absorbs it | Work is queued, not rejected; the API answers `202` immediately |
+| Steady throughput | Worker pods × threads per pod | KEDA target: queue depth per pod; total in-flight calls sized under the TPM quota |
+| Long episodes (2–3 h, ~30k words) | Context | ~45k tokens fits comfortably in a 1M-token context, so no chunking is needed for normal shows. For very long or multi-part content, a map-reduce step summarises segments first |
+| Back-catalogue jobs that are not urgent | Batch API | Route to the Message Batches API at 50% of the price, accepting up to 24 h turnaround |
 
 ---
 
@@ -306,18 +334,49 @@ Infrastructure cost is small next to model spend: at a few thousand episodes a m
 
 ---
 
-## 11. Observability and quality
+## 11. Observability: latency, tokens, cost and quality
 
-| Signal | Source | Alarm when |
+**Built in the repo.** Every report already records latency per model turn and per tool, tokens and cost
+(`metrics` in `report.json`, `model_call` / `tool_timing` events in `trace.jsonl`). With `--otel` the agent
+also emits OpenTelemetry traces and metrics (`src/podcast_agent/telemetry.py`), and
+`docker compose -f observability/docker-compose.yml up -d` starts an optional local Collector, Prometheus, Jaeger and Grafana
+with a ready-made dashboard. In production the same instrumentation points at the cluster's collector.
+
+```mermaid
+flowchart LR
+    A["agent pods<br/>telemetry.py + Anthropic SDK spans"] -- OTLP --> C["OTel Collector"]
+    C -- metrics --> P[("Prometheus")] --> G["Grafana<br/>cost · latency · tokens · verdicts<br/>+ alerts"]
+    C -- traces --> L["Langfuse (self-hosted)<br/>or Jaeger / Tempo"]
+    L -. "editor feedback as scores" .- R["Review app"]
+```
+
+| Tool | Answers | For |
 |---|---|---|
-| Queue age / depth | SQS | Oldest message > 15 min |
-| Job failure rate, DLQ depth | DynamoDB status, SQS | > 2% failed in an hour; DLQ > 0 |
-| Cost per episode, tokens per episode | `metrics` block in each report | 2× the 7-day median |
-| Guardrail rejection rate | `rejected_tool_calls` | Sudden rise (prompt or model regression) |
-| Verdict mix (✅ / ⚠️ / ❓) | Report | Shift after a KB or model change |
-| Editor edit distance / rejection rate | Review app | Quality drifting down |
+| **Langfuse** (traces) | What did the agent do on *this* episode: each turn, tool call, latency, tokens, cost, plus editor feedback as quality scores | AI engineers, quality review |
+| **Prometheus + Grafana** (metrics) | How is the system doing: cost per episode by client, p95 latency, tokens/min against quota, rejection rate, verdict mix, queue age; alerting | Ops, account leads, finance |
+| **Claude API tracing** (optional) | Server-side spans from the API itself (each model request inside a call, server-side web search), joined to ours by `traceparent` | Deep latency debugging; an org admin adds an OTLP destination in the Console |
 
-**Evaluation gate in CI.** A golden set of transcripts with expected claims, verdicts and quote checks runs on every change to prompts, tools, model or KB. A release is blocked if verdict accuracy or guardrail pass rate drops. Editor corrections from the review app are added to the golden set over time.
+Trace shape: `podcast_agent.episode` → `podcast_agent.turn` (×N, each containing the SDK's
+`anthropic.messages.create`) and `podcast_agent.tool` (×M). SDK spans are **metadata only** (model, tokens,
+timing), never prompts. Traces in content mode would contain client transcripts, so Langfuse runs
+**self-hosted inside the cluster** with per-client retention, not as a SaaS.
+
+| Metric (Prometheus name) | Labels | Alert when |
+|---|---|---|
+| `podcast_agent_episode_duration_seconds` (histogram), `podcast_agent_episode_time_seconds_total` | client, model, status | p95 > 10 min (the SLO) |
+| `podcast_agent_model_call_duration_seconds` | client, model | p95 doubles vs the 7-day baseline |
+| `podcast_agent_tool_call_duration_seconds` | tool, outcome | — (diagnostic) |
+| `podcast_agent_tokens_total` | type (input/output/cache_read/cache_write) | tokens/min > 80% of the quota |
+| `podcast_agent_cost_usd_total` | client, model | cost per episode > 2× the 7-day median; budget burn |
+| `podcast_agent_guardrail_rejections_total` | tool | sudden rise (prompt or model regression) |
+| `podcast_agent_verdicts_total`, `podcast_agent_needs_review_total` | verdict | mix shifts after a model, prompt or policy change |
+| `podcast_agent_episodes_total` | status | failures > 2% in an hour |
+| Queue age / depth, DLQ depth | (from the queue) | oldest message > 15 min; DLQ > 0 |
+
+Episode ids go on spans, never on metric labels (cardinality). Counters are published at zero when a worker
+starts, so `increase()` also counts the first episode of a short-lived process.
+
+**Evaluation gate in CI.** A golden set of transcripts with expected claims, verdicts and quote checks runs on every change to prompts, tools, model or KB. A release is blocked if verdict accuracy or guardrail pass rate drops. Editor corrections from the review app are added to the golden set over time; in Langfuse they attach to the episode's trace as scores.
 
 ---
 
@@ -325,7 +384,7 @@ Infrastructure cost is small next to model spend: at a few thousand episodes a m
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| 0. Today | Local Docker, CLI, curated KB | Panel review |
+| 0. Today | Local Docker, CLI, client source policies, threads, optional OTel stack | Panel review |
 | 1. Pilot (2–3 weeks) | One client, Fargate + SQS + S3, editors review in a shared folder | ≥ 90% of reports approved with minor edits |
-| 2. Production | Review app, Bedrock, OpenSearch KB, per-client isolation, CI eval gate | SLOs: 95% of episodes ready < 10 min; < 1% failures |
-| 3. Scale-out | Audio ingestion (Transcribe), Batch API for back catalogues, cheaper model routing per step, social-post generation | Cost per episode down 40% at equal quality |
+| 2. Production | Kubernetes workers + KEDA, shared rate limiter, review app, results store, self-hosted Langfuse + Grafana alerts, per-client isolation, CI eval gate | SLOs: 95% of episodes ready < 10 min; < 1% failures |
+| 3. Scale-out | asyncio workers where density pays, audio ingestion, Batch API for back catalogues, cheaper model routing per step, social-post generation | Cost per episode down 40% at equal quality |

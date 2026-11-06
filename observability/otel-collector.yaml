@@ -1,0 +1,42 @@
+# OpenTelemetry Collector: one OTLP intake, fanned out to a metrics store and a trace store.
+#   agent --OTLP/HTTP :4318--> collector --> Prometheus (scrapes :8889) --> Grafana
+#                                        \-> Jaeger (OTLP :4317)          (swap for Langfuse: see below)
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch: {}
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion:
+      enabled: true          # service.name / service.version become labels
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  debug:
+    verbosity: basic
+  # Langfuse (self-hosted in the cluster, or cloud) accepts OTLP traces directly. To use it, add this
+  # exporter and list it under the traces pipeline:
+  # otlphttp/langfuse:
+  #   endpoint: https://<langfuse-host>/api/public/otel
+  #   headers:
+  #     Authorization: "Basic ${env:LANGFUSE_AUTH}"   # base64("<public key>:<secret key>")
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]

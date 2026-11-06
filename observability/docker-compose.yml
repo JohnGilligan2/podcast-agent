@@ -1,0 +1,32 @@
+# OPTIONAL production scaffolding. Not needed to run the agent or its tests.
+#   docker compose -f observability/docker-compose.yml up -d
+# Grafana http://localhost:3000 · Prometheus http://localhost:9090 · Jaeger http://localhost:16686
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.1
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    ports: ["4318:4318", "4317:4317"]   # OTLP in from the agent (host or container)
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+
+  jaeger:   # trace viewer; Langfuse takes the same OTLP traces (see otel-collector.yaml)
+    image: jaegertracing/jaeger:2.1.0
+    ports: ["16686:16686"]
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"        # local demo only; production uses SSO
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/podcast-agent.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3000:3000"]
+    depends_on: [prometheus]

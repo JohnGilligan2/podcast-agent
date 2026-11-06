@@ -92,7 +92,12 @@ def to_markdown(r: EpisodeReport) -> str:
     out += ["---", f"*Generated {r.generated_at} by `{m.model}` (effort {m.effort}) · {m.model_turns} model turns · "
             f"{m.tool_calls} tool calls ({m.rejected_tool_calls} rejected by guardrails) · {m.searches} KB searches · "
             f"{m.web_searches} web searches ({m.blocked_results_dropped} blocked results dropped) · "
-            f"≈${m.estimated_cost_usd} · {m.duration_seconds}s*", ""]
+            f"≈${m.estimated_cost_usd if m.estimated_cost_usd is not None else 'n/a'} · {m.duration_seconds}s*", ""]
+    if m.turn_seconds:
+        slow_tool = max(m.tool_seconds_by_name.items(), key=lambda kv: kv[1], default=("—", 0))
+        out += [f"*Latency: waiting on Claude {m.model_seconds:.1f}s across {len(m.turn_seconds)} turns "
+                f"({' · '.join(f'{t:.1f}s' for t in m.turn_seconds)}), own tools {m.tool_seconds:.2f}s "
+                f"(slowest: `{slow_tool[0]}` {slow_tool[1]:.2f}s)*", ""]
     return "\n".join(out)
 
 
@@ -107,8 +112,8 @@ def write_episode(report: EpisodeReport, out_dir: Path) -> Path:
 def write_index(reports: list[EpisodeReport], out_dir: Path) -> Path:
     lines = ["# Podcast agent run", "",
              "| Episode | Title | Status | Claims ✅ / ⚠️ / ❓ | Needs review | Web searches | Turns | "
-             "Rejected calls | Cost (USD) | Report |",
-             "|---|---|---|---|---|---|---|---|---|---|"]
+             "Rejected calls | Time (s) | Cost (USD) | Report |",
+             "|---|---|---|---|---|---|---|---|---|---|---|"]
     total = 0.0
     for r in reports:
         v = [sum(f.verdict == k for f in r.fact_checks)
@@ -117,7 +122,8 @@ def write_index(reports: list[EpisodeReport], out_dir: Path) -> Path:
         total += cost
         lines.append(f"| {r.episode_id} | {_cell(r.title)} | {r.status} | {v[0]} / {v[1]} / {v[2]} | "
                      f"{sum(f.needs_human_review for f in r.fact_checks)} | {r.metrics.web_searches} | "
-                     f"{r.metrics.model_turns} | {r.metrics.rejected_tool_calls} | {cost:.3f} | "
+                     f"{r.metrics.model_turns} | {r.metrics.rejected_tool_calls} | {r.metrics.duration_seconds:.0f} | "
+                     f"{cost:.3f} | "
                      f"[report.md]({r.episode_id}/report.md) |")
     clients = sorted({f"`{r.client_id}` (policy `{r.source_policy_version}`)" for r in reports})
     lines += ["", f"**Client source policy:** {', '.join(clients)}", "",

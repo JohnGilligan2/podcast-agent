@@ -1,6 +1,9 @@
 services:
   agent:
-    build: .
+    build:
+      context: .
+      args:
+        EXTRAS: ${PODCAST_AGENT_EXTRAS:-dev}   # "dev,otel" adds the optional OpenTelemetry packages
     image: podcast-agent:latest
     env_file: .env            # must contain ANTHROPIC_API_KEY
     volumes:
@@ -9,7 +12,9 @@ services:
     command: ["run"]
 
   tests:
-    build: .
     image: podcast-agent:latest
     entrypoint: ["python", "-m", "pytest", "-q"]
     profiles: ["test"]
+
+# Optional, not needed to run the agent: a local observability stack (OTel Collector, Prometheus,
+# Jaeger, Grafana) lives in observability/docker-compose.yml. See observability/README.md.
