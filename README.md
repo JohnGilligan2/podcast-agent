@@ -336,7 +336,7 @@ data/
   golden/            golden set: expected claims and accepted verdicts per sample episode
 tests/               103 tests: guardrails, sources, messy ingest, hostile inputs, agent loop, store, worker, GUI, golden set, telemetry (no API key)
 deploy/              Helm chart (deployment switches only) and Argo CD application
-.github/workflows/   CI (lint, tests, golden set) and release (image + Helm tag)
+.github/workflows/   CI (lint, tests; live golden set on the run-golden PR label) and release (image + Helm tag)
 observability/       optional scaffolding: OTel Collector, Prometheus, Jaeger, Grafana dashboard
 docs/DEPLOYMENT.md   production deployment strategy, delivery pipeline, versioning and rollback
 CHANGELOG.md         what changed in each release
