@@ -1,4 +1,4 @@
-"""Results store: finished runs, their transcripts, editor disputes and the job queue.
+"""Results store: finished runs, their transcripts, editor reviews and disputes, and the job queue.
 
 The agent, the worker and the GUI all go through `ResultStore`, so the backend can change
 without touching them. v0.1 ships SQLite (one file on a Docker volume, no extra service).
@@ -56,6 +56,10 @@ CREATE TABLE IF NOT EXISTS disputes (
     resolved_by TEXT, resolved_at TEXT, resolution TEXT
 );
 CREATE INDEX IF NOT EXISTS disputes_episode ON disputes (episode_id);
+CREATE TABLE IF NOT EXISTS reviews (
+    episode_id TEXT NOT NULL, claim_id TEXT NOT NULL, who TEXT, reviewed_at TEXT,
+    PRIMARY KEY (episode_id, claim_id)
+);
 CREATE TABLE IF NOT EXISTS jobs (
     id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT, path TEXT, client TEXT,
     web_search INTEGER, status TEXT NOT NULL DEFAULT 'queued', message TEXT, episode_id TEXT,
@@ -97,6 +101,9 @@ class ResultStore(Protocol):
                     note: str, who: str) -> int: ...
     def resolve_dispute(self, dispute_id: int, who: str, resolution: str) -> None: ...
     def reopen_dispute(self, dispute_id: int) -> None: ...
+    def mark_reviewed(self, episode_id: str, claim_id: str, who: str) -> None: ...
+    def unmark_reviewed(self, episode_id: str, claim_id: str) -> None: ...
+    def reviews(self, episode_id: str) -> dict[str, dict]: ...
     def disputes(self, episode_id: str | None = None, status: str | None = None) -> list[dict]: ...
     def enqueue(self, filename: str, path: str, client: str, web_search: bool) -> int: ...
     def claim_job(self) -> dict | None: ...
@@ -139,10 +146,11 @@ class SQLiteStore:
 
     def save_episode(self, report: EpisodeReport, episode: Episode | None = None) -> None:
         """Insert or replace one episode and everything derived from it, in one transaction.
-        A rerun replaces the previous result; disputes are kept (they carry a copy of their text)."""
+        A rerun replaces the previous result; disputes are kept (they carry a copy of their text).
+        Reviews are cleared: a new run can change the verdicts, so a person has to look again."""
         eid = report.episode_id
         with self._conn() as c:
-            for table in ("transcript_lines", "notes", "claims"):
+            for table in ("transcript_lines", "notes", "claims", "reviews"):
                 c.execute(f"DELETE FROM {table} WHERE episode_id = ?", (eid,))
             if self.fts:
                 c.execute("DELETE FROM search_index WHERE episode_id = ?", (eid,))
@@ -187,7 +195,8 @@ class SQLiteStore:
         sql = ("SELECT e.id, e.title, e.client, e.status, e.processed_at, e.model, e.cost, e.code_version, "
                "e.prompt_version, "
                "(SELECT COUNT(*) FROM claims k WHERE k.episode_id = e.id) AS claims, "
-               "(SELECT COUNT(*) FROM claims k WHERE k.episode_id = e.id AND k.needs_review = 1) AS needs_review, "
+               "(SELECT COUNT(*) FROM claims k WHERE k.episode_id = e.id AND k.needs_review = 1 AND NOT EXISTS "
+               "(SELECT 1 FROM reviews v WHERE v.episode_id = k.episode_id AND v.claim_id = k.claim_id)) AS needs_review, "
                "(SELECT COUNT(*) FROM disputes d WHERE d.episode_id = e.id AND d.status = 'open') AS open_disputes "
                "FROM episodes e")
         args: tuple = ()
@@ -228,6 +237,26 @@ class SQLiteStore:
         if verdicts:
             hits = [h for h in hits if h.kind == "claim" and h.verdict in verdicts]
         return hits[:limit]
+
+    # ---- reviews ----------------------------------------------------------------------------
+    # A claim flagged for human review stays flagged until a person signs it off here.
+    # (Something actually wrong is a dispute instead.)
+
+    def mark_reviewed(self, episode_id: str, claim_id: str, who: str) -> None:
+        with self._conn() as c:
+            c.execute("INSERT OR REPLACE INTO reviews VALUES (?,?,?,?)",
+                      (episode_id, claim_id, who.strip() or "editor", now()))
+
+    def unmark_reviewed(self, episode_id: str, claim_id: str) -> None:
+        with self._conn() as c:
+            c.execute("DELETE FROM reviews WHERE episode_id = ? AND claim_id = ?", (episode_id, claim_id))
+
+    def reviews(self, episode_id: str) -> dict[str, dict]:
+        """claim_id -> {who, reviewed_at} for every signed-off claim in one episode."""
+        with self._conn() as c:
+            rows = c.execute("SELECT claim_id, who, reviewed_at FROM reviews WHERE episode_id = ?",
+                             (episode_id,)).fetchall()
+        return {r["claim_id"]: {"who": r["who"], "reviewed_at": r["reviewed_at"]} for r in rows}
 
     # ---- disputes ---------------------------------------------------------------------------
 

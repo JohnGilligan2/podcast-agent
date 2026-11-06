@@ -248,6 +248,7 @@ def page_report() -> None:
         st.warning(f"Run error: {r.error}")
     disputes = store.disputes(episode_id=eid)
     open_for = {(d["target_kind"], d["target_id"]) for d in disputes if d["status"] == "open"}
+    reviewed = store.reviews(eid)
 
     left, right = st.columns([11, 9], gap="large")
     with left:
@@ -275,7 +276,7 @@ def page_report() -> None:
         if r.fact_checks:
             st.subheader("Fact-check")
             st.dataframe([{"#": f.claim_id, "Claim": f.claim, "Verdict": f.verdict_label,
-                           "Confidence": f.confidence, "Review": "🔎" if f.needs_human_review else "",
+                           "Confidence": f.confidence, "Review": ("✔️" if f.claim_id in reviewed else "🔎") if f.needs_human_review else "",
                            "Sources": len(f.evidence)} for f in r.fact_checks], hide_index=True,
                          use_container_width=True,
                          column_config={"Confidence": st.column_config.ProgressColumn(min_value=0, max_value=1,
@@ -284,7 +285,11 @@ def page_report() -> None:
                 with st.container(border=True):
                     st.markdown(f"**{f.claim_id} · {f.verdict_label}** · confidence {f.confidence:.2f}  \n{f.claim}")
                     st.caption(f"{f.speaker} · `{f.timestamp}` · {f.claim_type}")
-                    if f.needs_human_review:
+                    done = reviewed.get(f.claim_id) if f.needs_human_review else None
+                    if done:
+                        st.success(f"Reviewed by {done['who']} at {done['reviewed_at'][:16].replace('T', ' ')} UTC. "
+                                   f"Flagged because: {f.review_reason or 'flagged'}", icon="✔️")
+                    elif f.needs_human_review:
                         st.warning(f"Needs human review: {f.review_reason or 'flagged'}", icon="🔎")
                     st.write(f.rationale)
                     for e in f.evidence:
@@ -293,10 +298,19 @@ def page_report() -> None:
                         st.markdown(f"- [{label}]({e.url}) · {tier}" if e.url else f"- {label} · {tier}")
                     if ("claim", f.claim_id) in open_for:
                         st.caption("⚑ open dispute")
-                    b1, b2 = st.columns(2)
+                    b1, b2, b3 = st.columns(3) if f.needs_human_review else (*st.columns(2), None)
                     b1.button("↪ Show line", key=f"c_jump_{f.claim_id}", on_click=focus_line, args=(f.timestamp,),
                               use_container_width=True)
-                    with b2:
+                    if b3 is not None:   # sign-off only for claims the agent sent to a person
+                        if done:
+                            b2.button("↩ Undo review", key=f"c_unrev_{f.claim_id}", on_click=store.unmark_reviewed,
+                                      args=(eid, f.claim_id), use_container_width=True)
+                        else:
+                            b2.button("✔ Mark reviewed", key=f"c_rev_{f.claim_id}", on_click=store.mark_reviewed,
+                                      args=(eid, f.claim_id, who()), use_container_width=True,
+                                      help="You checked the line and the sources and the verdict stands. "
+                                           "If something is wrong, use Dispute instead.")
+                    with b3 if b3 is not None else b2:
                         dispute_box(eid, "claim", f.claim_id, f.claim, f"c_{f.claim_id}")
         if r.reviewer_notes:
             st.subheader("Notes for the editor")

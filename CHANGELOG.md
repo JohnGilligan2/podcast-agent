@@ -7,6 +7,12 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [Unreleased]
 
+### Added
+- Report review: claims the agent flagged for human review get a **✔ Mark reviewed** button. A signed-off
+  claim turns green ("Reviewed by ana at 2026-11-06 18:42 UTC"), shows ✔️ in the fact-check table, and drops
+  out of History's "Needs review" count. **↩ Undo review** takes it back. A rerun clears the sign-off,
+  because the verdicts may change. Something actually wrong is still a dispute.
+
 ## [0.2.0] - 2026-11-06
 
 ### Added

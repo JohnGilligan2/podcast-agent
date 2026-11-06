@@ -88,6 +88,26 @@ def test_dispute_lifecycle(store):
     assert store.disputes(status="open")[0]["id"] == d
 
 
+
+def test_marking_a_claim_reviewed_clears_it_from_the_needs_review_count(store, reports):
+    store.save_episode(reports["ep900"])                         # C1 and C2 are flagged for review
+    assert store.list_episodes()[0]["needs_review"] == 2
+    store.mark_reviewed("ep900", "C1", "ana")
+    assert store.list_episodes()[0]["needs_review"] == 1
+    assert store.reviews("ep900")["C1"]["who"] == "ana"
+    store.mark_reviewed("ep900", "C1", "ben")                    # marking again just updates who
+    assert store.reviews("ep900")["C1"]["who"] == "ben" and store.list_episodes()[0]["needs_review"] == 1
+    store.unmark_reviewed("ep900", "C1")
+    assert store.reviews("ep900") == {} and store.list_episodes()[0]["needs_review"] == 2
+
+
+def test_rerun_clears_reviews_because_verdicts_may_change(store, reports):
+    store.save_episode(reports["ep900"])
+    store.mark_reviewed("ep900", "C1", "")
+    assert store.reviews("ep900")["C1"]["who"] == "editor"
+    store.save_episode(reports["ep900"])
+    assert store.reviews("ep900") == {} and store.list_episodes()[0]["needs_review"] == 2
+
 # ---- job queue ------------------------------------------------------------------------------------
 
 def test_two_workers_never_claim_the_same_job(store):
