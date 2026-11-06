@@ -7,6 +7,11 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [Unreleased]
 
+### Changed
+- CI: the live golden-set run (about $1.20, calls Claude) now runs only on request: add the `run-golden`
+  label to a pull request, or start the ci workflow by hand with "Run the live golden set" ticked. The label
+  is removed after the run. Lint, tests and the free scorer check still run on every pull request and push.
+
 ## [0.1.1] - 2026-11-06
 
 ### Fixed
