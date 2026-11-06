@@ -2,5 +2,5 @@ apiVersion: v2
 name: podcast-agent
 description: Podcast summariser and fact-checker - review GUI and queue workers
 type: application
-version: 0.1.0        # chart version
-appVersion: "0.1.0"   # default image tag; CI sets image.tag on each release
+version: 0.2.0        # chart version
+appVersion: "0.2.0"   # default image tag; CI sets image.tag on each release

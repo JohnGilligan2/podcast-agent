@@ -7,6 +7,11 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-06
+
+### Added
+- Reports show an estimated reading time under the summary ("265 words · about 1 min read").
+
 ### Changed
 - CI: the live golden-set run (about $1.20, calls Claude) now runs only on request: add the `run-golden`
   label to a pull request, or start the ci workflow by hand with "Run the live golden set" ticked. The label
