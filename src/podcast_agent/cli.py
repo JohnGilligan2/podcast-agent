@@ -218,7 +218,8 @@ def cmd_gui(args: argparse.Namespace) -> int:
         return 2
     app = Path(__file__).with_name("gui.py")
     sys.argv = ["streamlit", "run", str(app), "--server.port", str(args.port), "--server.address", args.host,
-                "--server.headless", "true", "--browser.gatherUsageStats", "false"]
+                "--server.headless", "true", "--browser.gatherUsageStats", "false",
+                "--client.toolbarMode", "minimal"]   # hide Streamlit's developer menu and Deploy button
     return stcli.main()
 
 

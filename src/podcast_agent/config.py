@@ -9,7 +9,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Where data/ and output/ live. Defaults to the repo root; the Docker image sets it to /app.
-PROJECT_ROOT = Path(os.getenv("PODCAST_AGENT_HOME") or Path(__file__).resolve().parents[2])
+# When installed as a package (not from the repo), data/ is not next to the code: use the working directory.
+_REPO = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(os.getenv("PODCAST_AGENT_HOME") or (_REPO if (_REPO / "data").is_dir() else Path.cwd()))
 
 # USD per million tokens (input, output). Used only for the cost estimate in run metrics.
 PRICING_PER_MTOK: dict[str, tuple[float, float]] = {
