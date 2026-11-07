@@ -13,7 +13,7 @@ curated local knowledge base keeps the agent working offline and in tests.
 | Source code (containerised) | [`src/podcast_agent/`](src/podcast_agent), [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml) |
 | Sample outputs (JSON + Markdown) | [`examples/sample_run/`](examples/sample_run) — start at [`index.md`](examples/sample_run/index.md) |
 | Agent reasoning logs | [`examples/sample_run/run.log`](examples/sample_run/run.log) and per-episode `trace.jsonl` |
-| Deployment strategy (diagram + narrative): Kubernetes on any cloud, plus an AWS managed variant | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Deployment strategy (diagram + narrative): beta on one machine today; long term, Kubernetes on any cloud, plus an AWS managed variant | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
 | Roadmap: single sign-on, MCP server, Kubernetes, next steps | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 | Client source policies | [`data/clients/`](data/clients) |
 | Review GUI (upload, job status, report review and sign-off, history, disputes) | [`gui.py`](src/podcast_agent/gui.py) · `docker compose up web worker` → http://localhost:8501 |

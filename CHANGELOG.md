@@ -15,6 +15,8 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 - DEPLOYMENT §10: login today and with SSO, roles and client scope, Kubernetes pod and secret security, supply chain.
 
 ### Changed
+- DEPLOYMENT: new §0, "Today: beta on one machine" (diagram, throughput, limits, why the later stages exist); the rest is
+  framed as the long-term strategy. The rollout plan starts at the beta.
 - DEPLOYMENT: the architecture is now cloud-neutral and Kubernetes-first (matching the Helm chart), with a table of
   equivalent services on AWS, Azure, Google Cloud, Oracle Cloud and on-prem. The AWS design moves to §1a as the
   "no cluster" variant; component choices, fault tolerance, cost and security read for any cloud. A stray
@@ -36,6 +38,8 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 - Reports show an estimated reading time under the summary ("265 words · about 1 min read").
 
 ### Changed
+- DEPLOYMENT: new §0, "Today: beta on one machine" (diagram, throughput, limits, why the later stages exist); the rest is
+  framed as the long-term strategy. The rollout plan starts at the beta.
 - DEPLOYMENT: the architecture is now cloud-neutral and Kubernetes-first (matching the Helm chart), with a table of
   equivalent services on AWS, Azure, Google Cloud, Oracle Cloud and on-prem. The AWS design moves to §1a as the
   "no cluster" variant; component choices, fault tolerance, cost and security read for any cloud. A stray
