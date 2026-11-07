@@ -10,6 +10,8 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 ### Added
 - `docs/ROADMAP.md`: the v1.0 production milestone (Postgres store, single sign-on and roles, approve-and-publish,
   sources admin, MCP server, Kubernetes hardening), with diagrams, effort and known gaps. README links to it.
+- README "Quality and delivery": golden set and its gates, free vs live (`run-golden` label) checks, branches, tags and
+  releases, with a diagram. Test count corrected to 113.
 - DEPLOYMENT §10: login today and with SSO, roles and client scope, Kubernetes pod and secret security, supply chain.
 
 ### Changed
