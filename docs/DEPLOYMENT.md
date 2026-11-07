@@ -8,6 +8,53 @@ published, and a budget someone has to answer for.
 > same container that runs in production. Production adds a queue in front of it, durable
 > storage behind it, and observability around it. It does not change the agent.
 
+> **Where this stands.** The project is in **beta (v0.x)** and today runs on **one machine with Docker**
+> (§0). Everything from §1 on is the **long-term strategy**: what it grows into, in stages (§12), as
+> usage, clients and uptime needs grow. Nothing in §1 has to exist before the first agency can use it.
+
+---
+
+## 0. Today: beta on one machine
+
+The whole system runs with `docker compose` on a single machine: a laptop for development, or one small
+cloud VM for a beta with real editors. This is what is built and tested today.
+
+```mermaid
+flowchart LR
+    ED["Editors<br/>(browser)"] -->|"private network / VPN"| WEB
+    subgraph VM["One machine · Docker"]
+        WEB["web container<br/>review GUI · uploads"]
+        WRK["worker container<br/>agent · 3 episodes at a time"]
+        VOL[("Docker volume<br/>SQLite results store + job queue<br/>uploads · reports")]
+        WEB -->|queue job| VOL
+        VOL -->|claim job| WRK
+        WRK -->|save results| VOL
+        VOL --> WEB
+    end
+    WRK -->|"Messages API + web search"| CL["Claude<br/>(Anthropic API)"]
+    VOL -. nightly copy .-> BK[("Backup<br/>(another disk or bucket)")]
+```
+
+| | Beta on one machine |
+|---|---|
+| **Start it** | `docker compose up -d web worker` (GUI on port 8501); the CLI batch run uses the same image |
+| **Throughput** | The sample run processed 5 episodes in about 2 minutes, 3 at a time. One machine handles well over a hundred episodes an hour, far more than "dozens to thousands a month"; the API rate limit is reached before the machine is busy |
+| **Cost** | Model spend (about $0.15–0.30 an episode) plus one small VM |
+| **Reliability** | Jobs left running by a crash are re-queued on restart; every multi-row write is one transaction; `restart: unless-stopped` brings the containers back after a reboot |
+| **Security** | No login yet: reachable only on a private network or VPN. The API key lives in `.env` on that machine, never in git |
+| **Data** | One SQLite file on a Docker volume; back it up nightly to another disk or a storage bucket |
+
+**What one machine does not give you, and why the later stages exist.** Throughput is not the reason
+to move on; these are:
+
+| Limit of one machine | Fixed by | Stage (§12) |
+|---|---|---|
+| The machine is a single point of failure: if it is down, nobody can review | Several pods across zones, managed data services | Production |
+| No single sign-on, roles or per-client access | SSO at the Ingress, roles from the agency's identity provider | v1.0 ([ROADMAP](ROADMAP.md)) |
+| Several clients share one database file | Postgres with client scoping, a storage prefix and key per client | v1.0 |
+| Backups and upgrades are manual | Managed backups; Argo CD rolls out a new version and rolls it back | Pilot → Production |
+| One person has to look after the box | The platform team's cluster and monitoring | Production |
+
 ---
 
 ## 1. Architecture at a glance
@@ -529,7 +576,7 @@ starts, so `increase()` also counts the first episode of a short-lived process.
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| 0. v0.x (today) | Docker: CLI, review GUI + queue worker, SQLite results store, client source policies, threads, golden set, CI, Helm chart, optional OTel stack | Panel review |
+| 0. Beta (v0.x, today) | **One machine with Docker** (§0): CLI, review GUI + queue worker, SQLite results store, client source policies, threads, golden set, CI; Helm chart written, optional OTel stack | A few editors use it for real episodes; reports need only minor edits |
 | 1. Pilot (2–3 weeks) | One client on a small managed Kubernetes cluster in the agency's cloud (or the AWS variant), editors review in the GUI | ≥ 90% of reports approved with minor edits |
 | 2. Production | Kubernetes workers + KEDA, shared rate limiter, review app, results store, self-hosted Langfuse + Grafana alerts, per-client isolation, CI eval gate | SLOs: 95% of episodes ready < 10 min; < 1% failures |
 | 3. Scale-out | asyncio workers where density pays, audio ingestion, Batch API for back catalogues, cheaper model routing per step, social-post generation | Cost per episode down 40% at equal quality |
