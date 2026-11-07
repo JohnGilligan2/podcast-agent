@@ -1,7 +1,7 @@
 """Results store: finished runs, their transcripts, editor reviews and disputes, and the job queue.
 
 The agent, the worker and the GUI all go through `ResultStore`, so the backend can change
-without touching them. v0.1 ships SQLite (one file on a Docker volume, no extra service).
+without touching them. Today it ships SQLite (one file on a Docker volume, no extra service).
 Production swaps in Postgres for the tables and OpenSearch for search, behind the same methods.
 
 SQLite rules followed here, for reliability under several threads and two containers:

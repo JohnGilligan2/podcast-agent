@@ -7,6 +7,15 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 
 ## [Unreleased]
 
+### Added
+- `docs/ROADMAP.md`: the v1.0 production milestone (Postgres store, single sign-on and roles, approve-and-publish,
+  sources admin, MCP server, Kubernetes hardening), with diagrams, effort and known gaps. README links to it.
+- DEPLOYMENT §10: login today and with SSO, roles and client scope, Kubernetes pod and secret security, supply chain.
+
+### Changed
+- Planned features are labelled v1.0 instead of v0.2 (v0.2.0 and v0.3.0 shipped without them), in the docs and
+  the Helm chart's messages.
+
 ## [0.3.0] - 2026-11-06
 
 ### Added

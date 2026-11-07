@@ -208,7 +208,7 @@ flowchart LR
 The agent, the worker and the GUI all write and read through one small interface
 ([`store.py`](../src/podcast_agent/store.py) `ResultStore`), so the backend can change without touching them.
 
-| | v0.1 (built, ships with the submission) | Production (v0.2) |
+| | Today (v0.x, built) | Production (v1.0) |
 |---|---|---|
 | Tables | SQLite file on a Docker volume shared by the `web` and `worker` containers | Postgres |
 | Search | SQLite FTS5 full-text index | OpenSearch |
@@ -252,7 +252,7 @@ One results store sits behind every front end; a client uses whichever fits.
 | Option | Who it's for | What it does | Effort |
 |---|---|---|---|
 | **CLI / Docker** (built) | Engineers, the panel | Batch-process files, write reports | Done |
-| **Web GUI** (built, v0.1) | Editors and producers | Upload transcripts, watch job status live, review the report next to the raw and clean transcript, jump from a quote or claim to its line, search history, raise and resolve disputes. v0.2 adds approve-and-publish, the sources admin page and login | Done (Streamlit); a React front end only if editors outgrow it |
+| **Web GUI** (built) | Editors and producers | Upload transcripts, watch job status live, review the report next to the raw and clean transcript, jump from a quote or claim to its line, search history, raise and resolve disputes. v1.0 adds approve-and-publish, the sources admin page and single sign-on ([ROADMAP](ROADMAP.md)) | Done (Streamlit); a React front end only if editors outgrow it |
 | **MCP server** | Teams who live in Claude or another MCP-capable chat | `submit_episode`, `get_report`, `search_results` from inside the chat. Read/search tools here; source-list writes only on the separate admin MCP server | Small: wraps the same `PodcastAgent.run` and results store |
 | **API** | Agencies plugging into their own tools, podcast-host or RSS integrations | `POST /episodes` → `202` + job id; webhooks / EventBridge on completion | Small: API Gateway + the submit Lambda below |
 | **Slack notifications** | Everyone | "Ready for review" with a link | Small |
@@ -375,6 +375,12 @@ Infrastructure cost is small next to model spend: at a few thousand episodes a m
 | Data residency / retention | Bedrock in the client's region; S3 lifecycle and DynamoDB TTL implement the retention period in each client contract; model providers do not train on API data. |
 | Network | Workers in private subnets; VPC endpoints for S3, DynamoDB, SQS, Bedrock; egress only through a NAT with an allow-list for the web-search provider. |
 | Audit | `trace.jsonl` records every reasoning summary, tool call and result for each report; CloudTrail covers infrastructure actions. |
+| Who can use it | **Today there is no login**: run it on a private network or VPN, never on the open internet. v1.0 adds single sign-on: OIDC at the Ingress (oauth2-proxy in front of the GUI and the MCP server) against the agency's identity provider (Entra ID, Okta, Google Workspace, or Cognito federated to one), with MFA set by the agency's own policy. See [ROADMAP](ROADMAP.md#single-sign-on-and-access). |
+| Roles and client scope | IdP groups map to roles (editor, lead, admin) and to the clients a user may see; store queries are filtered to those clients. Only admins change source lists, and every change is audited. |
+| Accountability | Every sign-off and dispute already records who and when; with SSO, "who" is the verified identity from the IdP instead of a typed name. |
+| Pods on Kubernetes | Non-root and a read-only root filesystem (in the chart today); the web pod has no API key because it never calls Claude. v1.0 adds NetworkPolicy: web → store only; workers → store plus egress to the model API and the search allow-list. |
+| Secrets on Kubernetes | The chart references the API-key Secret by name only; External Secrets syncs it from AWS Secrets Manager, Azure Key Vault or Vault, so it never sits in git and rotates without a redeploy. |
+| Supply chain | Branch protection on `main` (required CI and review); image scanning and an SBOM in the release workflow; Dependabot for dependencies (v1.0). |
 
 ---
 
@@ -428,7 +434,7 @@ starts, so `increase()` also counts the first episode of a short-lived process.
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| 0. v0.1 (submission) | Docker: CLI, review GUI + queue worker, SQLite results store, client source policies, threads, golden set, CI, Helm chart, optional OTel stack | Panel review |
+| 0. v0.x (today) | Docker: CLI, review GUI + queue worker, SQLite results store, client source policies, threads, golden set, CI, Helm chart, optional OTel stack | Panel review |
 | 1. Pilot (2–3 weeks) | One client, Fargate + SQS + S3, editors review in a shared folder | ≥ 90% of reports approved with minor edits |
 | 2. Production | Kubernetes workers + KEDA, shared rate limiter, review app, results store, self-hosted Langfuse + Grafana alerts, per-client isolation, CI eval gate | SLOs: 95% of episodes ready < 10 min; < 1% failures |
 | 3. Scale-out | asyncio workers where density pays, audio ingestion, Batch API for back catalogues, cheaper model routing per step, social-post generation | Cost per episode down 40% at equal quality |
@@ -479,10 +485,10 @@ flowchart LR
 | `.env.example`; the fictional sample client policies as seed files | The results database, uploaded transcripts and client reports |
 | Docs, sample outputs under `examples/`, CI workflows, `CHANGELOG.md` | |
 
-The chart is [`deploy/helm/podcast-agent`](../deploy/helm/podcast-agent). v0.1 targets the SQLite store, so it
+The chart is [`deploy/helm/podcast-agent`](../deploy/helm/podcast-agent). Today the chart targets the SQLite store, so it
 runs one web pod and one worker pod on one volume, and refuses, with a clear message, settings that need the
-v0.2 Postgres store: more replicas, the HPA, KEDA, or the MCP server. Pods run as non-root with a read-only
-root filesystem, and the web pod has no API key at all because it never calls Claude. Until the v0.2 sources
+v1.0 Postgres store: more replicas, the HPA, KEDA, or the MCP server. Pods run as non-root with a read-only
+root filesystem, and the web pod has no API key at all because it never calls Claude. Until the v1.0 sources
 admin page moves client policies into the database, real policy files are mounted from a ConfigMap created
 outside git (`clients.existingConfigMap`).
 
