@@ -15,6 +15,10 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 - DEPLOYMENT §10: login today and with SSO, roles and client scope, Kubernetes pod and secret security, supply chain.
 
 ### Changed
+- DEPLOYMENT: the architecture is now cloud-neutral and Kubernetes-first (matching the Helm chart), with a table of
+  equivalent services on AWS, Azure, Google Cloud, Oracle Cloud and on-prem. The AWS design moves to §1a as the
+  "no cluster" variant; component choices, fault tolerance, cost and security read for any cloud. A stray
+  fragment of an old table in §5 is removed.
 - Planned features are labelled v1.0 instead of v0.2 (v0.2.0 and v0.3.0 shipped without them), in the docs and
   the Helm chart's messages.
 
@@ -32,6 +36,10 @@ with, so any verdict can be traced to the release that produced it. Compare two 
 - Reports show an estimated reading time under the summary ("265 words · about 1 min read").
 
 ### Changed
+- DEPLOYMENT: the architecture is now cloud-neutral and Kubernetes-first (matching the Helm chart), with a table of
+  equivalent services on AWS, Azure, Google Cloud, Oracle Cloud and on-prem. The AWS design moves to §1a as the
+  "no cluster" variant; component choices, fault tolerance, cost and security read for any cloud. A stray
+  fragment of an old table in §5 is removed.
 - CI: the live golden-set run (about $1.20, calls Claude) now runs only on request: add the `run-golden`
   label to a pull request, or start the ci workflow by hand with "Run the live golden set" ticked. The label
   is removed after the run. Lint, tests and the free scorer check still run on every pull request and push.

@@ -12,6 +12,138 @@ published, and a budget someone has to answer for.
 
 ## 1. Architecture at a glance
 
+**Default: Kubernetes, on whatever cloud the agency already uses.** The same container runs as two
+Deployments from the Helm chart in [`deploy/`](../deploy): `web` (review GUI, API, MCP server) and
+`worker` (the agent). Argo CD keeps the cluster in step with `main`. Stateful pieces are the cloud's
+managed services; the cluster itself holds no data.
+
+```mermaid
+flowchart LR
+    subgraph Users["Agency users and systems"]
+        ED["Editors / producers"]
+        CH["Claude or another<br/>MCP chat tool"]
+        INT["Integrations<br/>RSS · Drive · API"]
+    end
+
+    IDP["Agency identity provider<br/>OIDC: Entra ID · Okta · Google"]
+
+    subgraph K8S["Kubernetes · any cloud or on-prem · deployed by Argo CD"]
+        ING["Ingress + TLS + WAF<br/>single sign-on (oauth2-proxy)"]
+        WEB["web<br/>review GUI + API"]
+        MCP["MCP server"]
+        WRK["agent workers<br/>KEDA: 0 → N on queue depth"]
+    end
+
+    subgraph DATA["Managed data services"]
+        Q[("Job queue<br/>+ dead-letter queue")]
+        PG[("Postgres<br/>jobs · results · reviews · disputes")]
+        OS[("OpenSearch<br/>history search")]
+        OBJ[("Object storage<br/>transcripts · reports · traces<br/>key per client")]
+    end
+
+    subgraph EXT["Model and evidence"]
+        RL["Rate limiter<br/>sized to the token quota"]
+        MOD["Claude<br/>Anthropic API · Bedrock · Vertex AI · Foundry"]
+        WS["Web search<br/>client trusted / blocked lists"]
+    end
+
+    OBS["OpenTelemetry<br/>metrics · traces · cost per client"]
+    SEC["Secrets manager<br/>via External Secrets"]
+
+    ED --> ING
+    CH --> ING
+    INT --> ING
+    ING <-. login .-> IDP
+    ING --> WEB
+    ING --> MCP
+    WEB -- submit --> Q
+    MCP -- submit --> Q
+    WEB --> PG
+    WEB --> OS
+    MCP --> PG
+    Q --> WRK
+    WRK --> RL --> MOD
+    WRK --> WS
+    WRK --> PG
+    WRK --> OBJ
+    PG -. indexed .-> OS
+    SEC -.-> WRK
+    WRK -.-> OBS
+    WEB -.-> OBS
+```
+
+- **Why Kubernetes by default.** It runs the same container on any cloud (EKS, AKS, GKE, OKE) or
+  on-prem (OpenShift, Rancher), so the design follows the agency rather than one vendor. One Helm chart
+  covers every environment, and Argo CD makes a release a commit.
+- **Why workers scale on queue depth.** An episode spends nearly all its time waiting on Claude, so
+  throughput comes from more episodes in flight, not more CPU. KEDA adds worker pods as the queue grows
+  and scales to zero when it is empty, so idle time costs nothing. The real ceiling is the model's
+  token quota, which the shared rate limiter protects.
+- **Why managed data services.** Postgres, OpenSearch, the queue and object storage hold everything that
+  matters, with the cloud's backups and multi-zone replicas. Pods can be replaced at any time.
+- **Model access is a setting, not a rewrite.** Claude through the Anthropic API works everywhere; on a
+  cloud with its own Claude endpoint (Bedrock, Vertex AI, Microsoft Foundry) traffic can stay inside the
+  agency's account. Only `llm.py` changes.
+- **Today's build is the same shape, smaller.** `docker compose` runs `web` and `worker` with SQLite as
+  the store and queue; the Helm chart runs the same two roles on a cluster. v1.0 swaps in the managed
+  services ([ROADMAP](ROADMAP.md)).
+
+### Runs on any cloud
+
+Every box in the diagram has a managed equivalent on each major cloud, and an open-source one on-prem.
+Later sections name AWS services where they give a concrete example; this table gives the equivalent.
+
+| Building block | AWS | Azure | Google Cloud | Oracle Cloud | On-prem / any |
+|---|---|---|---|---|---|
+| Kubernetes | EKS | AKS | GKE | OKE | OpenShift, Rancher |
+| Ingress, TLS, WAF | ALB + WAF | Application Gateway + WAF | Cloud Load Balancing + Cloud Armor | OCI Load Balancer + WAF | NGINX Ingress |
+| Single sign-on (OIDC) | Cognito or the agency IdP | Entra ID | Google Workspace / Identity Platform | OCI IAM Identity Domains | Okta, Keycloak |
+| Job queue | SQS | Service Bus | Pub/Sub | OCI Queue | Redis Streams, RabbitMQ |
+| Postgres | RDS / Aurora | Azure Database for PostgreSQL | Cloud SQL | OCI Database with PostgreSQL | CloudNativePG |
+| Search | OpenSearch Service | Azure AI Search | Elastic Cloud on GCP | OCI Search with OpenSearch | OpenSearch |
+| Object storage | S3 | Blob Storage | Cloud Storage | Object Storage | MinIO |
+| Secrets and keys | Secrets Manager + KMS | Key Vault | Secret Manager + Cloud KMS | OCI Vault | HashiCorp Vault |
+| Claude | Bedrock or Anthropic API | Microsoft Foundry or Anthropic API | Vertex AI or Anthropic API | Anthropic API | Anthropic API |
+| Image registry | ECR | ACR | Artifact Registry | OCIR | Harbor (GHCR today) |
+| Observability | CloudWatch, X-Ray | Azure Monitor | Cloud Monitoring, Cloud Trace | OCI Monitoring | Prometheus, Grafana, Jaeger |
+| Delivery | Argo CD | Argo CD | Argo CD | Argo CD | Argo CD |
+
+### One episode, end to end
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Editor / integration
+    participant API as web (behind SSO)
+    participant Q as Job queue
+    participant W as Worker pod (agent)
+    participant M as Claude
+    participant E as Web search + client sources
+    participant S as Postgres + object storage
+    U->>API: upload transcript (GUI, API or MCP)
+    API->>S: store transcript, create job (status=queued)
+    API->>Q: enqueue job id
+    API-->>U: job id, live status
+    Q->>W: deliver job (lease, redelivered if the pod dies)
+    loop plan → act → validate (≤ 25 turns)
+        W->>M: messages + tools
+        M-->>W: reasoning + tool calls
+        W->>E: search trusted sources and pinned facts
+        W->>W: guardrails (verbatim quotes, word count, evidence provenance)
+        W->>S: checkpoint step state
+    end
+    W->>S: report.json / report.md / trace.jsonl, status=complete
+    W->>Q: acknowledge job
+    S-->>U: "ready for review" (GUI, Slack or email)
+    U->>API: mark reviewed / dispute / approve
+```
+
+### 1a. AWS managed-services variant (no cluster to run)
+
+For an agency that is all-in on AWS and has no platform team to run Kubernetes, the same container runs
+on **ECS Fargate** behind **SQS**, with a serverless control plane. It trades portability for less to
+operate. Choose it when there is no existing cluster and no plan to run on another cloud.
+
 ```mermaid
 flowchart LR
     subgraph Clients["Agency users & systems"]
@@ -78,36 +210,6 @@ flowchart LR
     BUD --> CW
 ```
 
-### One episode, end to end
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant U as Editor / integration
-    participant API as API Gateway + Lambda
-    participant Q as SQS
-    participant W as Fargate worker (agent)
-    participant M as Claude (Bedrock)
-    participant K as Knowledge base
-    participant S as S3 + DynamoDB
-    U->>API: POST /episodes (transcript or audio URL)
-    API->>S: store transcript, create job (status=queued)
-    API->>Q: enqueue job id
-    API-->>U: 202 Accepted + job id
-    Q->>W: deliver message (visibility timeout 15 min)
-    loop plan → act → validate (≤ 25 turns)
-        W->>M: messages + tools
-        M-->>W: reasoning + tool calls
-        W->>K: search_knowledge_base
-        W->>W: guardrails (verbatim quotes, word count, evidence provenance)
-        W->>S: checkpoint step state
-    end
-    W->>S: report.json / report.md / trace.jsonl, status=needs_review
-    W->>Q: delete message
-    S-->>U: EventBridge → Slack/email "ready for review"
-    U->>API: approve / edit / reject (feedback stored for evals)
-```
-
 ---
 
 ## 2. End-to-end flow: from upload to published show notes
@@ -160,17 +262,21 @@ SDK retries rate-limit errors with backoff.
 
 ## 3. Component choices and why
 
-| Concern | Choice | Why this over the alternatives |
-|---|---|---|
-| Compute | **ECS Fargate** running the existing container | Same image as local dev (no "works on my laptop"). Agent runs take 1–4 min with long-held state; Fargate has no 15-minute cap and no cold-start penalty per step. Lambda + Step Functions is a good fit at very low volume; EKS is overkill for one service. |
-| Work distribution | **SQS + DLQ** | Decouples upload bursts from model rate limits; at-least-once delivery with redrive; queue depth is the autoscaling signal. |
-| Job state | **DynamoDB** | Job status, idempotency keys and per-step checkpoints; single-digit-ms writes, no capacity planning. |
-| Model access | **Claude on Bedrock** (primary), **Anthropic API** (secondary) | Bedrock keeps traffic inside the AWS account (IAM, PrivateLink, no API keys, data stays in-region). `llm.py` is the only file that changes to swap providers. Cross-region inference absorbs regional capacity issues. |
-| Evidence | **Live web search steered by a per-client source policy** (trusted domains, blocked domains, pinned facts) | The customer decides what counts as evidence; live results are fresher than stored facts. Pinned facts and the offline KB move to a managed index behind the same `search()` interface. See §4. |
-| Results store | **S3** (reports, traces) + **DynamoDB** (job status, metadata) + **OpenSearch** (search over summaries, quotes, claims) | Editors search history and verdict trends; see §5. |
-| Storage | **S3** with a KMS key per agency client | Reports, traces and transcripts; lifecycle rules move old artefacts to Glacier. |
-| Front end | Small review app on **CloudFront + S3**, **Cognito** SSO | Editors approve/edit/reject before anything is published; their edits become evaluation data. |
-| Delivery | GitHub Actions → ECR → ECS blue/green (CodeDeploy) | Each prompt/model change ships as a new image version, gated by the evaluation suite (§11). |
+| Concern | Default (Kubernetes, any cloud) | AWS managed variant (§1a) | Why |
+|---|---|---|---|
+| Compute | `web` and `worker` Deployments from the Helm chart | ECS Fargate | The same image as local development. Agent runs take 1–4 minutes with state held in memory, which suits long-running pods or tasks rather than 15-minute-capped functions |
+| Work distribution | The cloud's queue with a dead-letter queue (or Redis Streams); KEDA scales workers on its depth | SQS + DLQ | Absorbs upload bursts so they never hit model rate limits; at-least-once delivery with redrive; queue depth is the scaling signal |
+| Jobs and results | Postgres behind the `ResultStore` interface (SQLite today) | DynamoDB + S3 | One interface in [`store.py`](../src/podcast_agent/store.py), so the agent, worker and GUI never change |
+| Search over history | OpenSearch | OpenSearch Serverless | Editors search past episodes, quotes and claims and filter by verdict (§5) |
+| Files | Object storage, one prefix and key per client | S3 + KMS | Transcripts, reports and traces; lifecycle rules archive old ones |
+| Model access | Claude through the Anthropic API, or the cloud's own endpoint (Bedrock, Vertex AI, Microsoft Foundry) | Bedrock first, Anthropic API as fallback | Only `llm.py` changes. A cloud endpoint keeps traffic in the agency's account; two routes give a fallback during an outage |
+| Evidence | **Live web search steered by a per-client source policy** (trusted domains, blocked domains, pinned facts) | Same | The client decides what counts as evidence, and live results are fresher than stored facts (§4) |
+| Front end and login | Review GUI and MCP server behind oauth2-proxy and the agency's identity provider | CloudFront + Cognito federated to that provider | Editors review and sign off before anything is published; nobody manages passwords in the app |
+| Delivery | GitHub Actions → image registry → Helm values → Argo CD | GitHub Actions → ECR → ECS blue/green | Every prompt or model change ships as a new image version, gated by the golden set (§14) |
+
+**Why Kubernetes is the default.** Agencies already run on different clouds; one chart deploys the same
+system into any of them, and adding a client environment is a values file, not a new design. The AWS
+variant is the better choice only when nobody will run a cluster.
 
 ---
 
@@ -230,18 +336,7 @@ copy of the text it disputes. Review sign-offs are cleared, because a rerun can 
 filter claims by verdict (every ⚠️ this quarter); see how a recurring claim was judged over time; rerun
 old episodes after a source-policy change and compare verdicts; feed resolved disputes into the golden set.
 
----|---|
-| Metadata: client, show, episode, title, host, guests, processed date | DynamoDB |
-| Summary, takeaways, quotes with timestamps, tags | S3 (`report.json`) + OpenSearch |
-| Every claim with verdict, confidence, rationale, evidence tiers, review flag | S3 + OpenSearch |
-| Source policy version; model and prompt version; cost; run time; full trace | S3 (`trace.jsonl`) + DynamoDB |
-| Review status (pending / approved / edited / rejected) and approver | DynamoDB |
-
-Raw reports and traces live in S3, one prefix per client, encrypted with a key per client. What clients
-can do with it: search past episodes by topic, guest, quote or claim; filter claims by verdict (e.g.
-every ⚠️ in the last quarter); see how a recurring claim was judged over time; re-run old episodes
-after a source-policy change and diff the verdicts; and feed editor corrections into the evaluation
-set. Every query is scoped to the client making it.
+Every query is scoped to the client making it.
 
 ---
 
@@ -264,8 +359,8 @@ All of them reuse the agent unchanged; only the entry point differs.
 ## 7. Scalability: threads today, Kubernetes next, asyncio when it pays
 
 **Where the time goes** (measured, ep003): 35.9 s waiting on Claude across 4 turns, 0.14 s running our own
-tools and guardrails. The work is network-bound, so concurrency, not CPU, is what scales it. The AWS-native
-variant in §1 (ECS Fargate + SQS) is the same design with Fargate tasks in place of pods.
+tools and guardrails. The work is network-bound, so concurrency, not CPU, is what scales it. The AWS managed
+variant in §1a (ECS Fargate + SQS) is the same design with Fargate tasks in place of pods.
 
 | Stage | Runs on | Concurrency | Move on when |
 |---|---|---|---|
@@ -332,8 +427,8 @@ flowchart TD
     C -- still failing --> D[Fail over to secondary<br/>region / provider]
     B -- no: 400 --> E[Mark job failed<br/>with error]
     F[Model declines<br/>safety classifier] --> G[Server-side fallback model]
-    H[Worker crashes mid-episode] --> I[SQS visibility timeout expires]
-    I --> J[Another worker resumes<br/>from DynamoDB checkpoint]
+    H[Worker pod dies mid-episode] --> I[Queue lease expires<br/>job redelivered]
+    I --> J[Another worker resumes<br/>from the last checkpoint]
     J --> K{3rd failure?}
     K -- yes --> L[Dead-letter queue + alarm<br/>human triage]
     M[Agent runs out of steps] --> N[Report saved as 'incomplete'<br/>with what is missing]
@@ -342,7 +437,7 @@ flowchart TD
 
 - **Idempotency.** The job key is `hash(transcript + prompt version + model + KB version)`. A duplicate upload returns the existing job; a retried message never produces two reports.
 - **Graceful degradation.** A run that cannot finish still writes what it has, marked `incomplete` and naming what is missing, instead of losing the work.
-- **No single points of failure.** Every managed service above is multi-AZ; workers run in at least two AZs.
+- **No single points of failure.** The managed data services replicate across zones; worker and web pods spread across at least two zones, and a PodDisruptionBudget keeps one of each running through node upgrades.
 - **Poison messages** land in the DLQ after three attempts, raise an alarm, and can be replayed after a fix.
 
 ---
@@ -357,10 +452,10 @@ flowchart TD
 | Effort `low` / `medium` | Fewer reasoning tokens per turn | Measure quality on the eval set before lowering |
 | Smaller model for the bulk steps (e.g. Claude Sonnet 5.5 or Haiku 5.5 for claim extraction; Opus for verdicts) | Large share of tokens moves to a cheaper model | More moving parts; validate per step |
 | Message Batches API for back catalogues | 50% off | Up to 24 h latency |
-| Fargate Spot for workers | ~70% off compute | Interruptions are already handled by checkpoints + SQS redelivery |
-| Per-client quotas + AWS Budgets alarms | Caps runaway spend | Needs a quota policy agreed with account leads |
+| Spot / preemptible nodes for worker pods (Fargate Spot on AWS) | ~60–70% off compute | Interruptions are already handled by checkpoints and queue redelivery |
+| Per-client quotas + cloud budget alarms | Caps runaway spend | Needs a quota policy agreed with account leads |
 
-Infrastructure cost is small next to model spend: at a few thousand episodes a month, Fargate, SQS, DynamoDB, S3 and OpenSearch Serverless together are typically low hundreds of dollars a month, dominated by the OpenSearch Serverless minimum capacity (a managed vector store with lower floor pricing is an option at small scale).
+Infrastructure cost is small next to model spend: at a few thousand episodes a month, a small managed cluster (two or three nodes, with workers scaling to zero when idle), managed Postgres, OpenSearch and object storage are typically low hundreds of dollars a month on any of the major clouds. The AWS managed variant lands in the same range, dominated by the OpenSearch Serverless minimum capacity.
 
 ---
 
@@ -368,13 +463,13 @@ Infrastructure cost is small next to model spend: at a few thousand episodes a m
 
 | Risk | Control |
 |---|---|
-| Client content leaking between brands | Tenant id on every job; S3 prefix + KMS key per client; IAM conditions on the tenant tag; reports never mixed in one index. |
+| Client content leaking between brands | Client id on every job and every query; one storage prefix and one encryption key per client (S3 + KMS on AWS, Blob + Key Vault on Azure); access policies tied to the client id; reports never mixed in one index. |
 | Prompt injection inside a transcript ("ignore your instructions…") | The transcript is wrapped and labelled as untrusted data in the prompt; the agent's tools have **no side effects outside the job** (no email, no publishing), so the worst case is a bad report that a human reviews. |
 | Hallucinated facts or quotes | Guardrails in code: quotes must match the transcript verbatim; a "verified" verdict must cite a source the agent actually retrieved; summaries must meet the length spec. Editors approve before publishing. |
-| Secrets | No long-lived keys with Bedrock (IAM task role). Anthropic key, if used, lives in Secrets Manager and is injected at task start. |
-| Data residency / retention | Bedrock in the client's region; S3 lifecycle and DynamoDB TTL implement the retention period in each client contract; model providers do not train on API data. |
-| Network | Workers in private subnets; VPC endpoints for S3, DynamoDB, SQS, Bedrock; egress only through a NAT with an allow-list for the web-search provider. |
-| Audit | `trace.jsonl` records every reasoning summary, tool call and result for each report; CloudTrail covers infrastructure actions. |
+| Secrets | No long-lived keys where the cloud's own Claude endpoint is used: pods get a workload identity (IRSA on AWS, Workload Identity on GKE and AKS). An Anthropic API key, if used, lives in the cloud's secrets manager and reaches the pod through External Secrets. |
+| Data residency / retention | The cluster, data services and model endpoint run in the client's region; storage lifecycle rules and database retention jobs implement the period in each client contract; model providers do not train on API data. |
+| Network | Nodes in private subnets; private endpoints to the data services and the model; egress only through a NAT or egress gateway with an allow-list for the model API and the web-search provider. |
+| Audit | `trace.jsonl` records every reasoning summary, tool call and result for each report; the cloud's audit log (CloudTrail, Azure Activity Log, Cloud Audit Logs) covers infrastructure actions. |
 | Who can use it | **Today there is no login**: run it on a private network or VPN, never on the open internet. v1.0 adds single sign-on: OIDC at the Ingress (oauth2-proxy in front of the GUI and the MCP server) against the agency's identity provider (Entra ID, Okta, Google Workspace, or Cognito federated to one), with MFA set by the agency's own policy. See [ROADMAP](ROADMAP.md#single-sign-on-and-access). |
 | Roles and client scope | IdP groups map to roles (editor, lead, admin) and to the clients a user may see; store queries are filtered to those clients. Only admins change source lists, and every change is audited. |
 | Accountability | Every sign-off and dispute already records who and when; with SSO, "who" is the verified identity from the IdP instead of a typed name. |
@@ -435,7 +530,7 @@ starts, so `increase()` also counts the first episode of a short-lived process.
 | Phase | Scope | Exit criteria |
 |---|---|---|
 | 0. v0.x (today) | Docker: CLI, review GUI + queue worker, SQLite results store, client source policies, threads, golden set, CI, Helm chart, optional OTel stack | Panel review |
-| 1. Pilot (2–3 weeks) | One client, Fargate + SQS + S3, editors review in a shared folder | ≥ 90% of reports approved with minor edits |
+| 1. Pilot (2–3 weeks) | One client on a small managed Kubernetes cluster in the agency's cloud (or the AWS variant), editors review in the GUI | ≥ 90% of reports approved with minor edits |
 | 2. Production | Kubernetes workers + KEDA, shared rate limiter, review app, results store, self-hosted Langfuse + Grafana alerts, per-client isolation, CI eval gate | SLOs: 95% of episodes ready < 10 min; < 1% failures |
 | 3. Scale-out | asyncio workers where density pays, audio ingestion, Batch API for back catalogues, cheaper model routing per step, social-post generation | Cost per episode down 40% at equal quality |
 
