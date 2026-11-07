@@ -293,6 +293,42 @@ the GUI reads; `--no-store` skips that.
 
 ---
 
+## Quality and delivery
+
+Every change goes through the same path, and the agent's answers are checked against a **golden set**:
+episodes with the claims an editor expects it to find and the verdicts an editor accepts
+([`data/golden/golden.json`](data/golden/golden.json)).
+
+```mermaid
+flowchart LR
+    F[feature branch] -->|PR + CI| D[develop]
+    D -->|release PR + CI| M[main]
+    M -->|tag vX.Y.Z| R[release workflow]
+    R -->|build + push| G[(image on ghcr.io)]
+    R -->|write image tag| H[Helm values on main]
+    H -->|watched by| A[Argo CD] -->|sync| K[Kubernetes]
+```
+
+| Check | When | Cost | What fails it |
+|---|---|---|---|
+| Lint (`ruff`) and 113 tests (scripted model, GUI smoke tests) | Every pull request and every push to `develop` / `main` | Free | Any failure blocks the merge |
+| Golden set, **scored** on the committed sample run | Every pull request | Free | The scorer itself is broken |
+| Golden set, **live**: the agent re-runs the golden episodes on Claude, and the regression report is posted on the PR | Only on request: add the **`run-golden`** label to a PR (removed after the run), or run the `ci` workflow by hand | About $1.20 a run | Claim recall < 80%, verdict accuracy < 80%, or any quote not verbatim |
+
+Run the live check when a change can affect answers (prompt, tools, model, sources); skip it for docs and GUI
+changes. Run it yourself with `python -m podcast_agent eval output --baseline examples/sample_run`.
+
+| Branch / tag | Purpose |
+|---|---|
+| `feature/*` | One change each, merged into `develop` by a squashed pull request |
+| `develop` | Integration; always green |
+| `main` | Production; changes only through a release pull request from `develop` (merge commit) |
+| `vX.Y.Z` tag on `main` | Builds and publishes the image, writes its tag into the Helm values; Argo CD rolls it out. Rollback = revert that commit |
+
+Versions follow semver (feature → minor, fix → patch) and are listed in [`CHANGELOG.md`](CHANGELOG.md). Every
+report records the release, prompt fingerprint and model that produced it. Details:
+[`docs/DEPLOYMENT.md` §13–14](docs/DEPLOYMENT.md#13-delivery-pipeline-branches-ci-helm-and-argo-cd).
+
 ## Design decisions
 
 | Decision | Why | Alternative considered |
@@ -335,7 +371,7 @@ data/
   clients/           source policies: default.json, example_healthtech.json
   knowledge_base.json curated reference sources (with as_of dates)
   golden/            golden set: expected claims and accepted verdicts per sample episode
-tests/               103 tests: guardrails, sources, messy ingest, hostile inputs, agent loop, store, worker, GUI, golden set, telemetry (no API key)
+tests/               113 tests: guardrails, sources, messy ingest, hostile inputs, agent loop, store, worker, GUI, golden set, telemetry (no API key)
 deploy/              Helm chart (deployment switches only) and Argo CD application
 .github/workflows/   CI (lint, tests; live golden set on the run-golden PR label) and release (image + Helm tag)
 observability/       optional scaffolding: OTel Collector, Prometheus, Jaeger, Grafana dashboard
