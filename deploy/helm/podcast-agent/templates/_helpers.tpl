@@ -10,10 +10,10 @@ app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | qu
 
 {{/* Guard rails: refuse settings this release cannot honour, with a clear message. */}}
 {{- define "pa.guards" -}}
-{{- if .Values.mcp.enabled }}{{ fail "mcp.enabled: the MCP server ships in v0.2" }}{{ end -}}
-{{- if ne .Values.store.backend "sqlite" }}{{ fail "store.backend: only sqlite is available in v0.1 (postgres in v0.2)" }}{{ end -}}
+{{- if .Values.mcp.enabled }}{{ fail "mcp.enabled: the MCP server ships in v1.0, see docs/ROADMAP.md" }}{{ end -}}
+{{- if ne .Values.store.backend "sqlite" }}{{ fail "store.backend: only sqlite is available today (postgres in v1.0, see docs/ROADMAP.md)" }}{{ end -}}
 {{- if or (gt (int .Values.gui.replicas) 1) .Values.gui.autoscaling.enabled (gt (int .Values.worker.replicas) 1) .Values.worker.autoscaling.enabled }}
-{{- fail "more than one web or worker pod needs store.backend=postgres (v0.2): SQLite is one file on one volume" }}
+{{- fail "more than one web or worker pod needs store.backend=postgres (v1.0): SQLite is one file on one volume" }}
 {{- end -}}
 {{- end -}}
 
