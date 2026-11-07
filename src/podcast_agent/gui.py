@@ -95,7 +95,7 @@ st.session_state.setdefault("focus", None)
 with st.sidebar:
     st.title("🎙️ Podcast agent")
     st.radio("Page", PAGES, key="page", label_visibility="collapsed")
-    st.text_input("Your name (recorded on disputes)", key="who", placeholder="editor")
+    st.text_input("Your name (recorded on sign-offs and disputes)", key="who", placeholder="editor")
     open_disputes = len(store.disputes(status="open"))
     st.caption(f"{len(store.list_episodes())} episodes · {open_disputes} open disputes")
     st.caption(f"Store: `{settings.db_path.name}`")

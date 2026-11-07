@@ -1,7 +1,7 @@
 # Deployment switches only: what changes when you redeploy.
 # Not here, on purpose:
 #   - per-client trusted/blocked sources and pinned facts: client data that changes often. It lives in
-#     the database (v0.2 admin page); in v0.1 the policy files come from clients.existingConfigMap,
+#     the database (v1.0 admin page); until then the policy files come from clients.existingConfigMap,
 #     created outside git.
 #   - the API key: a Kubernetes Secret created outside the repo (for example by External Secrets).
 
@@ -25,7 +25,7 @@ secrets:
 # ---- web GUI ----------------------------------------------------------------------------------------
 gui:
   enabled: true
-  replicas: 1                 # >1 needs store.backend=postgres (v0.2): SQLite is one file on one volume
+  replicas: 1                 # >1 needs store.backend=postgres (v1.0): SQLite is one file on one volume
   autoscaling:                # horizontal pod autoscaler on web traffic (CPU)
     enabled: false
     minReplicas: 2
@@ -37,14 +37,14 @@ gui:
 
 # ---- MCP server (Claude and other chat tools) --------------------------------------------------------
 mcp:
-  enabled: false              # reserved: the MCP server ships in v0.2
+  enabled: false              # reserved: the MCP server ships in v1.0
 
 # ---- agent workers ----------------------------------------------------------------------------------
 worker:
   replicas: 1
   concurrency: 3              # episodes in parallel per pod (threads: the work is waiting on Claude)
   terminationGracePeriodSeconds: 600   # SIGTERM: finish running episodes, take no new ones
-  autoscaling:                # KEDA on job-queue depth, 0 -> N; needs store.backend=postgres (v0.2)
+  autoscaling:                # KEDA on job-queue depth, 0 -> N; needs store.backend=postgres (v1.0)
     enabled: false
     minReplicas: 0
     maxReplicas: 10
@@ -55,7 +55,7 @@ worker:
 
 # ---- results store ----------------------------------------------------------------------------------
 store:
-  backend: sqlite             # sqlite (v0.1) | postgres + OpenSearch (v0.2)
+  backend: sqlite             # sqlite (today) | postgres + OpenSearch (v1.0)
   persistence:
     size: 5Gi
     storageClass: ""

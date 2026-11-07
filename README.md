@@ -14,6 +14,7 @@ curated local knowledge base keeps the agent working offline and in tests.
 | Sample outputs (JSON + Markdown) | [`examples/sample_run/`](examples/sample_run) — start at [`index.md`](examples/sample_run/index.md) |
 | Agent reasoning logs | [`examples/sample_run/run.log`](examples/sample_run/run.log) and per-episode `trace.jsonl` |
 | Deployment strategy (diagram + narrative) | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) |
+| Roadmap: single sign-on, MCP server, Kubernetes, next steps | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 | Client source policies | [`data/clients/`](data/clients) |
 | Review GUI (upload, job status, report review and sign-off, history, disputes) | [`gui.py`](src/podcast_agent/gui.py) · `docker compose up web worker` → http://localhost:8501 |
 | Golden set, regression report, CI, Helm chart | [`data/golden/`](data/golden), [`.github/workflows/`](.github/workflows), [`deploy/`](deploy), [`CHANGELOG.md`](CHANGELOG.md) |
@@ -339,6 +340,7 @@ deploy/              Helm chart (deployment switches only) and Argo CD applicati
 .github/workflows/   CI (lint, tests; live golden set on the run-golden PR label) and release (image + Helm tag)
 observability/       optional scaffolding: OTel Collector, Prometheus, Jaeger, Grafana dashboard
 docs/DEPLOYMENT.md   production deployment strategy, delivery pipeline, versioning and rollback
+docs/ROADMAP.md      v1.0 and later: single sign-on, MCP server, Kubernetes hardening, known gaps
 CHANGELOG.md         what changed in each release
 examples/sample_run/ committed outputs from a real run
 ```
@@ -365,6 +367,22 @@ or without a collector, the run continues normally. A ready-to-try local stack a
 - **Different provider** → change `llm.py` only (e.g. `AnthropicBedrockMantle` for Claude on Bedrock).
 - **Audio input** → add a transcription step in front of `ingest.py`.
 
+## Roadmap
+
+The next milestone, **v1.0**, makes it production-ready for a pilot with one agency. Details, effort and
+diagrams are in [`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+| v1.0 item | In one line |
+|---|---|
+| Postgres + OpenSearch store | Same `ResultStore` interface; unlocks more than one web and worker pod |
+| Single sign-on and roles | OIDC at the Ingress (Entra ID, Okta, Google); editor / lead / admin roles; each user sees only their clients |
+| Approve-and-publish | draft → reviewed → approved → published, with who and when |
+| Sources admin page | Client source lists move from files into the database, audited |
+| MCP server | The agent and results from Claude or any MCP chat tool, behind the same login |
+| Kubernetes, for real | Install the Helm chart on a cluster, chart checks in CI, NetworkPolicy, External Secrets, HPA and KEDA |
+
+Security today and in v1.0 is in [`docs/DEPLOYMENT.md` §10](docs/DEPLOYMENT.md#10-security-privacy-and-compliance).
+
 ## Limitations
 
 - The local knowledge base is a small snapshot written from the model's knowledge of public sources,
@@ -373,3 +391,6 @@ or without a collector, the run continues normally. A ready-to-try local stack a
 - Light transcript cleaning means quotes are lightly edited, as is normal for show notes; `raw_text`
   is preserved in memory for auditing.
 - Very long episodes (multiple hours) fit in context but would benefit from segment summaries first.
+- There is no login yet: run the GUI on a private network until single sign-on lands (v1.0).
+- The Helm chart and Argo CD application are written and documented but have not yet been installed on a
+  cluster; that is the first Kubernetes item on the roadmap.
