@@ -47,8 +47,10 @@ flowchart LR
         WS["Web search<br/>client trusted / blocked lists"]
     end
 
-    OBS["OpenTelemetry<br/>metrics · traces · cost per client"]
-    SEC["Secrets manager<br/>via External Secrets"]
+    subgraph PLAT["Platform"]
+        SEC["Secrets manager<br/>via External Secrets"]
+        OBS["OpenTelemetry<br/>metrics · traces · cost per client"]
+    end
 
     ED --> ING
     CH --> ING
@@ -60,7 +62,6 @@ flowchart LR
     MCP -- submit --> Q
     WEB --> PG
     WEB --> OS
-    MCP --> PG
     Q --> WRK
     WRK --> RL --> MOD
     WRK --> WS
@@ -69,7 +70,6 @@ flowchart LR
     PG -. indexed .-> OS
     SEC -.-> WRK
     WRK -.-> OBS
-    WEB -.-> OBS
 ```
 
 - **Why Kubernetes by default.** It runs the same container on any cloud (EKS, AKS, GKE, OKE) or
