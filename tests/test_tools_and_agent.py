@@ -142,8 +142,9 @@ def test_unknown_blocks_and_missing_search_results_reach_the_trace(episode, kb, 
     script = happy_script()
     script[0].content[:0] = [NS(type="server_tool_use", id="s1", name="web_search", input={"query": "q"}),
                              NS(type="code_execution_tool_result", content="TypeError: str has no .get")]
-    PodcastAgent(ScriptedLLM(script), kb, Settings(), today="2026-11-05").run(
+    report = PodcastAgent(ScriptedLLM(script), kb, Settings(), today="2026-11-05").run(
         episode, trace_path=tmp_path / "trace.jsonl")
+    assert 0 <= report.metrics.duration_seconds < 60   # the balance check must not clobber the start time
     trace = (tmp_path / "trace.jsonl").read_text(encoding="utf-8")
     assert '"event": "other_block"' in trace and "code_execution_tool_result" in trace
     assert '"event": "web_search_mismatch"' in trace and '"started": 1' in trace and '"returned": 0' in trace

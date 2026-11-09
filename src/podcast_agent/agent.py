@@ -194,10 +194,10 @@ class PodcastAgent:
             log.exception("  ✖ episode failed: %s", error)
 
         # A search's result can arrive in a later turn than its call, so balance them per episode.
-        started, returned = executor.state.web_searches, executor.state.web_results_returned
-        if started != returned:
-            log.warning("  ⚠ %d web searches started but %d result blocks returned", started, returned)
-            emit("web_search_mismatch", started=started, returned=returned)
+        searched, returned = executor.state.web_searches, executor.state.web_results_returned
+        if searched != returned:
+            log.warning("  ⚠ %d web searches started but %d result blocks returned", searched, returned)
+            emit("web_search_mismatch", started=searched, returned=returned)
         metrics.searches = executor.state.searches
         metrics.web_searches = executor.state.web_searches
         metrics.blocked_results_dropped = executor.state.blocked_results_dropped
