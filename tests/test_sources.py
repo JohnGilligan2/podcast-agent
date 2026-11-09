@@ -55,6 +55,13 @@ def test_web_search_tool_sends_allow_or_block_list_never_both(default, strict):
     assert "fda.gov" in strict_tool["allowed_domains"] and "blocked_domains" not in strict_tool
 
 
+def test_web_search_is_called_directly_not_through_code_execution(default, strict):
+    # On web_search_20260209 the default caller is code execution, which made Claude parse raw
+    # JSON strings in its own scripts and silently lose results. Direct calls avoid that.
+    for tool in (default.web_search_tool(8), strict.web_search_tool(8)):
+        assert tool["allowed_callers"] == ["direct"]
+
+
 def test_invalid_policies_are_refused(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text(json.dumps({"client_id": "x", "trusted_domains": ["a.com"], "blocked_domains": ["a.com"]}))

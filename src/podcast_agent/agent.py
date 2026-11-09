@@ -193,6 +193,11 @@ class PodcastAgent:
             status, error = "failed", f"{type(exc).__name__}: {exc}"
             log.exception("  ✖ episode failed: %s", error)
 
+        # A search's result can arrive in a later turn than its call, so balance them per episode.
+        started, returned = executor.state.web_searches, executor.state.web_results_returned
+        if started != returned:
+            log.warning("  ⚠ %d web searches started but %d result blocks returned", started, returned)
+            emit("web_search_mismatch", started=started, returned=returned)
         metrics.searches = executor.state.searches
         metrics.web_searches = executor.state.web_searches
         metrics.blocked_results_dropped = executor.state.blocked_results_dropped
@@ -288,11 +293,12 @@ class PodcastAgent:
                 log.info("  💬 step %d: %s", step, _short(block.text, 300))
                 emit("text", step=step, text=block.text)
             elif btype == "server_tool_use":
-                if block.name == "web_search":   # (code_execution here is web search's own filtering)
+                if block.name == "web_search":
                     executor.state.web_searches += 1
                 log.info("  🌐 step %d → %s(%s)", step, block.name, _short(block.input, 140))
                 emit("server_tool_call", step=step, tool=block.name, input=block.input)
             elif btype == "web_search_tool_result":
+                executor.state.web_results_returned += 1
                 content = getattr(block, "content", None)
                 if isinstance(content, list):
                     results = [{"url": getattr(r, "url", None), "title": getattr(r, "title", None),
@@ -310,3 +316,9 @@ class PodcastAgent:
             elif btype == "fallback":
                 log.warning("  ⤳ step %d: request served by fallback model", step)
                 emit("fallback", step=step)
+            elif btype not in ("thinking", "redacted_thinking", "text", "tool_use"):
+                # Any block type not handled above (e.g. code execution results) still reaches the
+                # trace, so a new or unexpected server-side behaviour is never silently dropped.
+                data = block.model_dump() if hasattr(block, "model_dump") else repr(block)
+                log.info("  📦 step %d: unhandled %s block: %s", step, btype, _short(data, 300))
+                emit("other_block", step=step, block_type=btype, block=data)

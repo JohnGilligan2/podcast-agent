@@ -181,6 +181,7 @@ class AgentState:
     finished: bool = False
     searches: int = 0
     web_searches: int = 0
+    web_results_returned: int = 0   # result blocks received; should end equal to web_searches
     blocked_results_dropped: int = 0
 
     def missing(self) -> list[str]:

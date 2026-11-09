@@ -136,6 +136,19 @@ def test_agent_loop_self_corrects_and_completes(episode, kb, tmp_path):
     assert trace.count('"event": "model_call"') == 6 and '"duration_ms"' in trace
 
 
+def test_unknown_blocks_and_missing_search_results_reach_the_trace(episode, kb, tmp_path):
+    """A block type the logger doesn't know (e.g. a code execution result) must still be traced,
+    and a web search that returns no result block must be flagged, never silently dropped."""
+    script = happy_script()
+    script[0].content[:0] = [NS(type="server_tool_use", id="s1", name="web_search", input={"query": "q"}),
+                             NS(type="code_execution_tool_result", content="TypeError: str has no .get")]
+    PodcastAgent(ScriptedLLM(script), kb, Settings(), today="2026-11-05").run(
+        episode, trace_path=tmp_path / "trace.jsonl")
+    trace = (tmp_path / "trace.jsonl").read_text(encoding="utf-8")
+    assert '"event": "other_block"' in trace and "code_execution_tool_result" in trace
+    assert '"event": "web_search_mismatch"' in trace and '"started": 1' in trace and '"returned": 0' in trace
+
+
 def test_agent_nudges_when_model_stops_early(episode, kb):
     llm = ScriptedLLM([_resp(NS(type="text", text="All done!"), stop="end_turn")] * 3)
     report = PodcastAgent(llm, kb, Settings()).run(episode)

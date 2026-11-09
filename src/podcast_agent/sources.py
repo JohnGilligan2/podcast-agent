@@ -109,8 +109,14 @@ class ClientSources:
     def web_search_tool(self, max_uses: int) -> dict:
         """Anthropic's server-side web search, steered by this policy. The API accepts
         allowed_domains OR blocked_domains, never both, so 'trusted_only' sends the allow list
-        and 'prefer_trusted' sends the block list. Blocked domains are also filtered in code."""
-        tool: dict = {"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses}
+        and 'prefer_trusted' sends the block list. Blocked domains are also filtered in code.
+
+        allowed_callers=["direct"]: on web_search_20260209 the default caller is code execution
+        (dynamic filtering), so Claude writes a script around each search and must parse the JSON
+        string it gets back. That silently failed in the first sample run. Direct calls return
+        results straight to Claude as web_search_tool_result blocks, which provenance registers."""
+        tool: dict = {"type": "web_search_20260209", "name": "web_search", "max_uses": max_uses,
+                      "allowed_callers": ["direct"]}
         if self.search_mode == "trusted_only":
             tool["allowed_domains"] = [t.domain for t in self.trusted_domains]
         elif self.blocked_domains:
