@@ -37,7 +37,7 @@ def test_episode_trace_and_metrics():
 
     finished = spans.get_finished_spans()
     names = [s.name for s in finished]
-    assert names.count("podcast_agent.turn") == 6 and names.count("podcast_agent.tool") == 8
+    assert names.count("podcast_agent.turn") == 6 and names.count("podcast_agent.tool") == 9
     root = next(s for s in finished if s.name == "podcast_agent.episode")
     assert root.attributes["episode.id"] == "ep001" and root.attributes["status"] == "complete"
     assert root.attributes["guardrail_rejections"] == 1

@@ -210,7 +210,7 @@ class PodcastAgent:
             source_file=Path(episode.source_path).name, client_id=self.sources.client_id,
             source_policy_version=self.sources.version, code_version=CODE_VERSION,
             prompt_version=PROMPT_VERSION, status=status, error=error,
-            plan=s.plan, summary=s.summary, key_notes=s.key_notes,
+            plan=s.plan, summary=s.summary, key_notes=s.key_notes, tweet=s.tweet,
             fact_checks=[s.verdicts[c] for c in s.claims if c in s.verdicts],
             reviewer_notes=s.reviewer_notes, ingest=episode.ingest_report, metrics=metrics,
             generated_at=datetime.now(UTC).isoformat(timespec="seconds"),

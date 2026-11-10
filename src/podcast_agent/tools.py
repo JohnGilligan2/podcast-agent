@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -30,6 +31,20 @@ from .schemas import (
 from .sources import TRUSTED_TIERS, UNTRUSTED_MAX_CONFIDENCE, ClientSources
 
 SUMMARY_MIN_WORDS, SUMMARY_MAX_WORDS = 200, 300
+TWEET_MAX_CHARS, TWEET_MAX_HASHTAGS = 280, 2
+HASHTAG_RE = re.compile(r"#\w+")
+URL_RE = re.compile(r"https?://|www\.", re.IGNORECASE)
+# X counts characters by weight, not by len(): code points in these ranges (Latin, Greek, Cyrillic,
+# Hebrew, Arabic, Indic scripts and common punctuation) count 1 and everything else, such as emoji
+# and Chinese/Japanese/Korean, counts 2 (docs.x.com/fundamentals/counting-characters, twitter-text v3).
+_X_WEIGHT_1_RANGES = ((0, 4351), (8192, 8205), (8208, 8223), (8242, 8247))
+
+
+def x_weighted_length(text: str) -> int:
+    """Length as X counts it. Slightly conservative: a multi-part emoji (e.g. a family or a skin
+    tone) is counted per code point, so the result can be a little high, never too low."""
+    text = unicodedata.normalize("NFC", text)
+    return sum(1 if any(lo <= ord(ch) <= hi for lo, hi in _X_WEIGHT_1_RANGES) else 2 for ch in text)
 WORD_RE = re.compile(r"[A-Za-z0-9]+(?:['’\-][A-Za-z0-9]+)*")
 
 
@@ -155,6 +170,14 @@ TOOL_DEFINITIONS: list[dict] = [
         }),
     },
     {
+        "name": "submit_tweet",
+        "description": f"Submit a tweet-sized summary of the episode for social media: at most {TWEET_MAX_CHARS} "
+                       f"characters, at most {TWEET_MAX_HASHTAGS} hashtags, no links. Submit it after every "
+                       "registered claim has a verdict, and never state as fact a claim you did not verify. "
+                       "Rejected with a reason if it breaks a rule; resubmit to replace.",
+        "input_schema": _obj({"tweet": STR}),
+    },
+    {
         "name": "finish",
         "description": "Call when every deliverable is submitted and every registered claim has a verdict. "
                        "reviewer_notes: anything a human editor should check (likely transcription errors, "
@@ -173,6 +196,7 @@ class AgentState:
     plan: list[PlanStep] = field(default_factory=list)
     summary: Summary | None = None
     key_notes: KeyNotes | None = None
+    tweet: str | None = None
     claims: dict[str, Claim] = field(default_factory=dict)
     verdicts: dict[str, FactCheck] = field(default_factory=dict)
     seen_sources: dict[str, Evidence] = field(default_factory=dict)  # provenance whitelist
@@ -194,6 +218,8 @@ class AgentState:
             out.append("key notes (submit_key_notes)")
         if not self.claims_registered:
             out.append("claims (register_claims)")
+        if not self.tweet:
+            out.append("tweet (submit_tweet)")
         pending = [cid for cid in self.claims if cid not in self.verdicts]
         if pending:
             out.append(f"verdicts for {', '.join(pending)} (record_verdict)")
@@ -210,6 +236,7 @@ class ToolExecutor:
             "create_plan": self.create_plan,
             "submit_summary": self.submit_summary,
             "submit_key_notes": self.submit_key_notes,
+            "submit_tweet": self.submit_tweet,
             "register_claims": self.register_claims,
             "search_knowledge_base": self.search_knowledge_base,
             "record_verdict": self.record_verdict,
@@ -266,6 +293,32 @@ class ToolExecutor:
         self.state.summary = Summary(text=text, word_count=words, core_themes=args["core_themes"],
                                      key_discussions=args["key_discussions"], outcomes=args["outcomes"])
         return f"Summary accepted ({words} words)."
+
+    def submit_tweet(self, args: dict) -> str:
+        """The tweet goes out publicly, so it is written last: only once every claim has a verdict,
+        so Claude can leave out anything it could not verify."""
+        tweet = " ".join(args["tweet"].split())
+        problems = []
+        if not tweet:
+            problems.append("tweet is empty")
+        length = x_weighted_length(tweet)
+        if length > TWEET_MAX_CHARS:
+            problems.append(f"tweet is {length} characters as X counts them (emoji count 2); "
+                            f"the limit is {TWEET_MAX_CHARS}")
+        hashtags = HASHTAG_RE.findall(tweet)
+        if len(hashtags) > TWEET_MAX_HASHTAGS:
+            problems.append(f"{len(hashtags)} hashtags; use at most {TWEET_MAX_HASHTAGS}")
+        if URL_RE.search(tweet):
+            problems.append("remove the link; links are added at publishing time")
+        if not self.state.claims_registered:
+            problems.append("register_claims first; the tweet is written after fact-checking")
+        pending = [cid for cid in self.state.claims if cid not in self.state.verdicts]
+        if pending:
+            problems.append(f"record verdicts for {', '.join(pending)} first, so the tweet reflects the fact-check")
+        if problems:
+            raise ToolRejected("Tweet rejected: " + "; ".join(problems) + ". Revise and resubmit.")
+        self.state.tweet = tweet
+        return f"Tweet accepted ({x_weighted_length(tweet)} of {TWEET_MAX_CHARS} characters)."
 
     def submit_key_notes(self, args: dict) -> str:
         problems: list[str] = []

@@ -113,6 +113,7 @@ class EpisodeReport(BaseModel):
     plan: list[PlanStep] = []
     summary: Summary | None = None
     key_notes: KeyNotes | None = None
+    tweet: str | None = None     # tweet-sized summary for social media (<= 280 chars)
     fact_checks: list[FactCheck] = []
     reviewer_notes: list[str] = []
     ingest: dict = {}             # lines parsed / kept / cleaned / dropped / flagged, speaker map

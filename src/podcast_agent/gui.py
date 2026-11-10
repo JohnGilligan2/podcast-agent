@@ -21,6 +21,7 @@ from podcast_agent.ingest import ASCII_MAP, MAX_FILE_BYTES, load_episode
 from podcast_agent.render import TIER_TAGS
 from podcast_agent.schemas import VERDICT_LABELS
 from podcast_agent.store import SQLiteStore, open_store
+from podcast_agent.tools import x_weighted_length
 from podcast_agent.worker import save_upload
 
 PAGES = ["Upload", "Jobs", "Report review", "History", "Disputes"]
@@ -256,6 +257,10 @@ def page_report() -> None:
             st.subheader("Summary")
             st.write(r.summary.text)
             st.caption(f"{r.summary.word_count} words")
+        if r.tweet:
+            st.subheader("Tweet")
+            st.code(r.tweet, language=None, wrap_lines=True)   # code block = one-click copy
+            st.caption(f"{x_weighted_length(r.tweet)} / 280 characters")
         if r.key_notes:
             st.subheader("Top 5 takeaways")
             st.markdown("\n".join(f"{i}. {t}" for i, t in enumerate(r.key_notes.takeaways, 1)))

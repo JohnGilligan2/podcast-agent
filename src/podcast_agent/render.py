@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from .schemas import EpisodeReport
+from .tools import x_weighted_length
 
 
 def _cell(text: str) -> str:
@@ -49,6 +50,9 @@ def to_markdown(r: EpisodeReport) -> str:
                     (r.summary.core_themes, r.summary.key_discussions, r.summary.outcomes)]
             out.append("| " + " | ".join(_cell(c) for c in cols) + " |")
         out.append("")
+
+    if r.tweet:
+        out += ["## 🐦 Tweet", "", f"> {r.tweet}", "", f"*{x_weighted_length(r.tweet)} / 280 characters*", ""]
 
     if r.key_notes:
         out += ["## 🔹 Top 5 takeaways", ""]

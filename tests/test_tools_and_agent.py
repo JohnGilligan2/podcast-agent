@@ -9,10 +9,12 @@ from podcast_agent.agent import PodcastAgent
 from podcast_agent.config import Settings
 from podcast_agent.ingest import load_episode
 from podcast_agent.knowledge_base import KnowledgeBase
-from podcast_agent.tools import ToolExecutor, ToolRejected, quote_matches
+from podcast_agent.render import to_markdown
+from podcast_agent.tools import ToolExecutor, ToolRejected, quote_matches, x_weighted_length
 
 ROOT = Path(__file__).resolve().parents[1]
 GOOD_SUMMARY = " ".join(["word"] * 240)
+GOOD_TWEET = "Remote work runs on writing things down: GitLab's public handbook shows how. #RemoteWork"
 
 
 @pytest.fixture
@@ -113,8 +115,9 @@ def happy_script():
                                                        "timestamp": "01:20", "claim_type": "factual"}]})),
         _resp(_tool(6, "search_knowledge_base", {"query": "GitLab handbook"})),
         _resp(_tool(7, "record_verdict", {"claim_id": "C1", "verdict": "verified", "confidence": 0.9,
-                                          "rationale": "KB confirms", "evidence_ids": ["kb-gitlab-all-remote"]})),
-        _resp(_tool(8, "finish", {"reviewer_notes": ["none"]})),
+                                          "rationale": "KB confirms", "evidence_ids": ["kb-gitlab-all-remote"]}),
+              _tool(8, "submit_tweet", {"tweet": GOOD_TWEET})),
+        _resp(_tool(9, "finish", {"reviewer_notes": ["none"]})),
     ]
 
 
@@ -128,8 +131,9 @@ def test_agent_loop_self_corrects_and_completes(episode, kb, tmp_path):
     rejected = llm.calls[2]["content"][0]  # tool_result sent back after the short summary
     assert rejected["is_error"] is True and "must be 200-300" in rejected["content"]
     assert len(report.fact_checks) == 1 and report.fact_checks[0].evidence[0].source_id == "kb-gitlab-all-remote"
+    assert report.tweet == GOOD_TWEET
     trace = (tmp_path / "trace.jsonl").read_text(encoding="utf-8")
-    assert trace.count('"event": "tool_call"') == 8
+    assert trace.count('"event": "tool_call"') == 9
     # latency is always recorded, telemetry or not
     m = report.metrics
     assert len(m.turn_seconds) == 6 and m.model_seconds >= 0 and "submit_summary" in m.tool_seconds_by_name
@@ -155,3 +159,74 @@ def test_agent_nudges_when_model_stops_early(episode, kb):
     report = PodcastAgent(llm, kb, Settings()).run(episode)
     assert report.status == "failed" and "without finishing" in report.error
     assert "You have not called finish" in llm.calls[1]["content"]
+
+
+# ---------- tweet-sized summary -------------------------------------------------------------
+
+def _fact_checked(episode, kb) -> ToolExecutor:
+    """An executor where the one claim already has a verdict, so a tweet may be submitted."""
+    ex = ToolExecutor(episode, kb)
+    ex.execute("register_claims", {"claims": [{"claim": "GitLab has a public handbook", "speaker": "Mark",
+                                               "timestamp": "01:20", "claim_type": "factual"}]})
+    ex.execute("search_knowledge_base", {"query": "GitLab handbook"})
+    ex.execute("record_verdict", {"claim_id": "C1", "verdict": "verified", "confidence": 0.9,
+                                  "rationale": "KB confirms", "evidence_ids": ["kb-gitlab-all-remote"]})
+    return ex
+
+
+def test_x_weighted_length_counts_emoji_and_cjk_as_two():
+    assert x_weighted_length("a" * 280) == 280
+    assert x_weighted_length("café — “quoted”") == 15          # accents and punctuation weigh 1
+    assert x_weighted_length("🎙️") >= 2 and x_weighted_length("播客") == 4
+
+
+@pytest.mark.parametrize("tweet, reason", [
+    ("x" * 281, "281 characters"),
+    ("🎙" * 141, "282 characters"),                       # 141 emoji = 282 as X counts them
+    ("Great episode #a #b #c", "3 hashtags"),
+    ("Listen now https://example.com/ep1", "remove the link"),
+    ("   ", "tweet is empty"),
+])
+def test_tweet_rejected_with_a_reason(episode, kb, tweet, reason):
+    ex = _fact_checked(episode, kb)
+    with pytest.raises(ToolRejected, match=reason):
+        ex.execute("submit_tweet", {"tweet": tweet})
+    assert ex.state.tweet is None
+
+
+def test_tweet_at_the_limit_is_accepted(episode, kb):
+    ex = _fact_checked(episode, kb)
+    assert "280 of 280" in ex.execute("submit_tweet", {"tweet": "y" * 280})
+    assert "140 of 280" in ex.execute("submit_tweet", {"tweet": "🎙" * 70})   # resubmitting replaces it
+    assert ex.state.tweet == "🎙" * 70
+
+
+def test_tweet_waits_for_the_fact_check(episode, kb):
+    ex = ToolExecutor(episode, kb)
+    with pytest.raises(ToolRejected, match="register_claims first"):
+        ex.execute("submit_tweet", {"tweet": GOOD_TWEET})
+    ex.execute("register_claims", {"claims": [{"claim": "GitLab has a public handbook", "speaker": "Mark",
+                                               "timestamp": "01:20", "claim_type": "factual"}]})
+    with pytest.raises(ToolRejected, match="record verdicts for C1 first"):
+        ex.execute("submit_tweet", {"tweet": GOOD_TWEET})
+
+
+def test_finish_requires_a_tweet(episode, kb):
+    ex = _fact_checked(episode, kb)
+    assert "tweet (submit_tweet)" in ex.state.missing()
+    ex.execute("submit_tweet", {"tweet": GOOD_TWEET})
+    assert "tweet (submit_tweet)" not in ex.state.missing()
+
+
+def test_agent_fixes_a_rejected_tweet(episode, kb, tmp_path):
+    """End to end: the model's first tweet is too long, the rejection goes back as is_error,
+    and the corrected tweet is what reaches the report and the markdown."""
+    script = happy_script()
+    script[-2].content.insert(1, _tool(80, "submit_tweet", {"tweet": "z" * 300}))   # before the good one
+    llm = ScriptedLLM(script)
+    report = PodcastAgent(llm, kb, Settings(), today="2026-11-05").run(episode)
+    assert report.status == "complete" and report.tweet == GOOD_TWEET
+    assert report.metrics.rejected_tool_calls == 2          # the short summary and the long tweet
+    sent_back = llm.calls[-1]["content"]                   # tool_results for the verdict + tweets turn
+    assert any(r.get("is_error") and "300 characters" in r["content"] for r in sent_back)
+    assert "## 🐦 Tweet" in to_markdown(report)
